@@ -98,7 +98,7 @@ public class UserService implements IuserService {
       Set<String> roles = (req.getRoles() == null || req.getRoles().isEmpty())
           ? Collections.emptySet() : req.getRoles(); 
 
-      
+      // settuser
       Users user = Users.builder()
               .userId(generateUserId())
               .userName(req.getUserName())
