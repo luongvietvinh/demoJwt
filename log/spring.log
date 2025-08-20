@@ -1,0 +1,141 @@
+[2m-2025-08-18 11:26:57.056[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m Starting DemoApplication using Java 17.0.6 with PID 12672 (F:\Linh tinh\demo\target\classes started by PC in F:\Linh tinh\demo)
+-[2m-2025-08-18 11:26:57.063[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m No active profile set, falling back to 1 default profile: "default"
+-[2m-2025-08-18 11:26:58.192[0;39m  [33m[ WARN][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.m.s.mapper.ClassPathMapperScanner     [0;39m [2m:[0;39m No MyBatis mapper was found in '[com.example.demo]' package. Please check your configuration.
+-[2m-2025-08-18 11:26:58.632[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat initialized with port 8000 (http)
+-[2m-2025-08-18 11:26:58.643[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+-[2m-2025-08-18 11:26:58.644[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/10.1.26]
+-[2m-2025-08-18 11:26:58.753[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring embedded WebApplicationContext
+-[2m-2025-08-18 11:26:58.754[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mw.s.c.ServletWebServerApplicationContext[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 1609 ms
+-[2m-2025-08-18 11:26:58.820[0;39m  [33m[ WARN][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mConfigServletWebServerApplicationContext[0;39m [2m:[0;39m Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'userController' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\controller\UserController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userService' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\service\impl\UserService.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.example.demo.repository.UserMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+-[2m-2025-08-18 11:26:58.823[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Stopping service [Tomcat]
+-[2m-2025-08-18 11:26:58.845[0;39m  [32m[ INFO][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36m.s.b.a.l.ConditionEvaluationReportLogger[0;39m [2m:[0;39m 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+-[2m-2025-08-18 11:26:58.866[0;39m  [31m[ERROR][0;39m [35m12672[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.d.LoggingFailureAnalysisReporter  [0;39m [2m:[0;39m 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.example.demo.service.impl.UserService required a bean of type 'com.example.demo.repository.UserMapper' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.example.demo.repository.UserMapper' in your configuration.
+
+-[2m-2025-08-18 11:28:31.417[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m Starting DemoApplication using Java 17.0.6 with PID 14992 (F:\Linh tinh\demo\target\classes started by PC in F:\Linh tinh\demo)
+-[2m-2025-08-18 11:28:31.419[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m No active profile set, falling back to 1 default profile: "default"
+-[2m-2025-08-18 11:28:32.291[0;39m  [33m[ WARN][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.m.s.mapper.ClassPathMapperScanner     [0;39m [2m:[0;39m No MyBatis mapper was found in '[com.example.demo]' package. Please check your configuration.
+-[2m-2025-08-18 11:28:32.657[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat initialized with port 8000 (http)
+-[2m-2025-08-18 11:28:32.666[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+-[2m-2025-08-18 11:28:32.667[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/10.1.26]
+-[2m-2025-08-18 11:28:32.753[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring embedded WebApplicationContext
+-[2m-2025-08-18 11:28:32.753[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mw.s.c.ServletWebServerApplicationContext[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 1295 ms
+-[2m-2025-08-18 11:28:32.812[0;39m  [33m[ WARN][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mConfigServletWebServerApplicationContext[0;39m [2m:[0;39m Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'userController' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\controller\UserController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userService' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\service\impl\UserService.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.example.demo.repository.UserMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+-[2m-2025-08-18 11:28:32.815[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Stopping service [Tomcat]
+-[2m-2025-08-18 11:28:32.833[0;39m  [32m[ INFO][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36m.s.b.a.l.ConditionEvaluationReportLogger[0;39m [2m:[0;39m 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+-[2m-2025-08-18 11:28:32.850[0;39m  [31m[ERROR][0;39m [35m14992[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.d.LoggingFailureAnalysisReporter  [0;39m [2m:[0;39m 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.example.demo.service.impl.UserService required a bean of type 'com.example.demo.repository.UserMapper' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.example.demo.repository.UserMapper' in your configuration.
+
+-[2m-2025-08-18 11:37:13.981[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m Starting DemoApplication using Java 17.0.6 with PID 11364 (F:\Linh tinh\demo\target\classes started by PC in F:\Linh tinh\demo)
+-[2m-2025-08-18 11:37:13.983[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m No active profile set, falling back to 1 default profile: "default"
+-[2m-2025-08-18 11:37:14.736[0;39m  [33m[ WARN][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.m.s.mapper.ClassPathMapperScanner     [0;39m [2m:[0;39m No MyBatis mapper was found in '[com.example.demo]' package. Please check your configuration.
+-[2m-2025-08-18 11:37:15.079[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat initialized with port 8000 (http)
+-[2m-2025-08-18 11:37:15.089[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+-[2m-2025-08-18 11:37:15.089[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/10.1.26]
+-[2m-2025-08-18 11:37:15.171[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring embedded WebApplicationContext
+-[2m-2025-08-18 11:37:15.171[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mw.s.c.ServletWebServerApplicationContext[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 1147 ms
+-[2m-2025-08-18 11:37:15.228[0;39m  [33m[ WARN][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mConfigServletWebServerApplicationContext[0;39m [2m:[0;39m Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'userController' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\controller\UserController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userService' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\service\impl\UserService.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.example.demo.repository.UserMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+-[2m-2025-08-18 11:37:15.230[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Stopping service [Tomcat]
+-[2m-2025-08-18 11:37:15.246[0;39m  [32m[ INFO][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36m.s.b.a.l.ConditionEvaluationReportLogger[0;39m [2m:[0;39m 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+-[2m-2025-08-18 11:37:15.262[0;39m  [31m[ERROR][0;39m [35m11364[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.d.LoggingFailureAnalysisReporter  [0;39m [2m:[0;39m 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.example.demo.service.impl.UserService required a bean of type 'com.example.demo.repository.UserMapper' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.example.demo.repository.UserMapper' in your configuration.
+
+-[2m-2025-08-18 11:40:12.312[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m Starting DemoApplication using Java 17.0.6 with PID 23568 (F:\Linh tinh\demo\target\classes started by PC in F:\Linh tinh\demo)
+-[2m-2025-08-18 11:40:12.314[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m No active profile set, falling back to 1 default profile: "default"
+-[2m-2025-08-18 11:40:13.046[0;39m  [33m[ WARN][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.m.s.mapper.ClassPathMapperScanner     [0;39m [2m:[0;39m No MyBatis mapper was found in '[com.example.demo]' package. Please check your configuration.
+-[2m-2025-08-18 11:40:13.407[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat initialized with port 8000 (http)
+-[2m-2025-08-18 11:40:13.417[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+-[2m-2025-08-18 11:40:13.417[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/10.1.26]
+-[2m-2025-08-18 11:40:13.509[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring embedded WebApplicationContext
+-[2m-2025-08-18 11:40:13.510[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mw.s.c.ServletWebServerApplicationContext[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 1158 ms
+-[2m-2025-08-18 11:40:13.569[0;39m  [33m[ WARN][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mConfigServletWebServerApplicationContext[0;39m [2m:[0;39m Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'userController' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\controller\UserController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userService' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\service\impl\UserService.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.example.demo.repository.UserMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+-[2m-2025-08-18 11:40:13.572[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Stopping service [Tomcat]
+-[2m-2025-08-18 11:40:13.588[0;39m  [32m[ INFO][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36m.s.b.a.l.ConditionEvaluationReportLogger[0;39m [2m:[0;39m 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+-[2m-2025-08-18 11:40:13.602[0;39m  [31m[ERROR][0;39m [35m23568[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.d.LoggingFailureAnalysisReporter  [0;39m [2m:[0;39m 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.example.demo.service.impl.UserService required a bean of type 'com.example.demo.repository.UserMapper' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.example.demo.repository.UserMapper' in your configuration.
+
+-[2m-2025-08-18 11:42:21.701[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m Starting DemoApplication using Java 17.0.6 with PID 20716 (F:\Linh tinh\demo\target\classes started by PC in F:\Linh tinh\demo)
+-[2m-2025-08-18 11:42:21.703[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mcom.example.demo.DemoApplication        [0;39m [2m:[0;39m No active profile set, falling back to 1 default profile: "default"
+-[2m-2025-08-18 11:42:22.441[0;39m  [33m[ WARN][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.m.s.mapper.ClassPathMapperScanner     [0;39m [2m:[0;39m No MyBatis mapper was found in '[com.example.demo]' package. Please check your configuration.
+-[2m-2025-08-18 11:42:22.783[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat initialized with port 8000 (http)
+-[2m-2025-08-18 11:42:22.792[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+-[2m-2025-08-18 11:42:22.792[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/10.1.26]
+-[2m-2025-08-18 11:42:22.878[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring embedded WebApplicationContext
+-[2m-2025-08-18 11:42:22.878[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mw.s.c.ServletWebServerApplicationContext[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 1135 ms
+-[2m-2025-08-18 11:42:22.933[0;39m  [33m[ WARN][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mConfigServletWebServerApplicationContext[0;39m [2m:[0;39m Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'userController' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\controller\UserController.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'userService' defined in file [F:\Linh tinh\demo\target\classes\com\example\demo\service\impl\UserService.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'com.example.demo.repository.UserMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+-[2m-2025-08-18 11:42:22.936[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Stopping service [Tomcat]
+-[2m-2025-08-18 11:42:22.951[0;39m  [32m[ INFO][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36m.s.b.a.l.ConditionEvaluationReportLogger[0;39m [2m:[0;39m 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+-[2m-2025-08-18 11:42:22.967[0;39m  [31m[ERROR][0;39m [35m20716[0;39m [2m---[0;39m [2m[           main][0;39m [36mo.s.b.d.LoggingFailureAnalysisReporter  [0;39m [2m:[0;39m 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.example.demo.service.impl.UserService required a bean of type 'com.example.demo.repository.UserMapper' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'com.example.demo.repository.UserMapper' in your configuration.
+
+-

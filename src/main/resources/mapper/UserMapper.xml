@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.repository.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.example.demo.entity.Users">
+	    <id property="userId" column="user_id"/>
+	    <result property="userName" column="user_name"/>
+	    <result property="passWord" column="pass_word"/>
+	    <result property="mail" column="mail"/>
+	    <result property="isEnabled" column="is_enabled"/>
+	    <collection property="roles" ofType="string">
+        	<result property="role" column="role"/>
+    	</collection>
+	</resultMap>
+
+    <insert id="insert" parameterType="com.example.demo.entity.Users" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (user_id, user_name,pass_word,mail, create_time, create_user)
+        VALUES (#{userId}, #{userName}, #{passWord}, #{mail}, CURRENT_TIMESTAMP, #{userName})
+    </insert>
+    
+    <insert id="insertRole" parameterType="com.example.demo.entity.RoleEntity" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO role (user_id,role, create_time, is_active)
+        VALUES (#{userId}, #{role}, CURRENT_TIMESTAMP, #{isActive})
+    </insert>
+
+    <select id="findAll" resultMap="UserResultMap" parameterType="map">
+    SELECT
+	     user_id, 
+	     user_name, 
+	     pass_word, 
+	     mail
+    FROM users
+    ORDER BY user_id
+    LIMIT #{limit} OFFSET #{offset}
+</select>
+
+    <select id="findById" parameterType="string" resultMap="UserResultMap">
+        SELECT user_id, user_name, pass_word, mail FROM users WHERE user_id = #{userId}
+    </select>
+
+    <delete id="delete" parameterType="string">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+    <update id="update" parameterType="com.example.demo.entity.Users">
+        UPDATE users
+        SET 
+        	user_name = #{userName}, 
+        	pass_word = #{passWord},
+        	mail = #{mail}
+        WHERE user_id = #{userId}
+    </update>
+    
+    <select id="findByUserName" parameterType="string" resultMap="UserResultMap">
+        SELECT 
+         u.user_id, 
+	     u.user_name, 
+	     u.pass_word, 
+	     u.mail,
+	     u.is_enabled,
+		 r.role
+		 FROM users AS u
+		 JOIN role AS r ON u.user_id = r.user_id
+		 WHERE user_name = #{userName}
+    </select>
+    
+    <select id="existsByUserName" parameterType="string" resultType="boolean">
+	    SELECT COUNT(*) > 0
+	    FROM users
+	    WHERE user_name = #{userName}
+	</select>
+
+</mapper>
