@@ -12,7 +12,7 @@
 	    <result property="mail" column="mail"/>
 	    <result property="isEnabled" column="is_enabled"/>
 	    <collection property="roles" ofType="string">
-        	<result property="role" column="role"/>
+        	<result property="role" column="role_code"/>
     	</collection>
 	</resultMap>
 
@@ -61,9 +61,9 @@
 	     u.pass_word, 
 	     u.mail,
 	     u.is_enabled,
-		 r.role
+		 r.role_code
 		 FROM users AS u
-		 JOIN role AS r ON u.user_id = r.user_id
+		 JOIN user_role AS r ON u.user_id = r.user_id
 		 WHERE user_name = #{userName}
     </select>
     
