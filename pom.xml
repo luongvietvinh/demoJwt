@@ -78,6 +78,12 @@
 	        <version>0.11.5</version>
 	        <scope>runtime</scope>
 	    </dependency>
+	    <!-- send mail -->
+	    <dependency>
+		    <groupId>com.sun.mail</groupId>
+		    <artifactId>jakarta.mail</artifactId>
+		    <version>2.0.1</version>
+		</dependency>
 	    <!-- mockito -->
 	    <dependency>
 		    <groupId>org.mockito</groupId>
@@ -132,6 +138,15 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <version>3.2.5</version>
         </plugin>
+         <!-- SendEmail -->
+        <plugin>
+		    <groupId>org.codehaus.mojo</groupId>
+		    <artifactId>exec-maven-plugin</artifactId>
+		    <version>3.1.0</version>
+		    <configuration>
+		        <mainClass>com.example.utils.SendEmail</mainClass> <!-- Đường dẫn đầy đủ -->
+		    </configuration>
+		</plugin>
         </plugins>
     </build>
 </project>
