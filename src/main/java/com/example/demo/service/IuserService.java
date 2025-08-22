@@ -4,10 +4,11 @@ package com.example.demo.service;
 import java.util.List;
 import java.util.Optional;
 import com.example.demo.entity.Users;
+import com.example.demo.request.RequestDto;
 
 public interface IuserService {
   
-    Users saveUser(Users user);
+    Users saveUser(RequestDto request);
     
     List<Users> getAllUsers(int page, int size);
     

@@ -51,6 +51,7 @@ public class AuthControllerTests {
         System.out.println("Running test...");
     }
     // ✅ Test cho phương thức register
+    @SuppressWarnings("deprecation")
     @Test
     public void testRegisterSuccess() {
        Set<String> roles = Set.of("1", "2");
@@ -64,6 +65,7 @@ public class AuthControllerTests {
         assertTrue(response.getBody().toString().contains("Đăng ký thành công"));
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testRegisterFail() {
         Set<String> roles = Set.of("1", "2");
@@ -77,6 +79,7 @@ public class AuthControllerTests {
     }
 
     // ✅ Test cho phương thức login
+    @SuppressWarnings("deprecation")
     @Test
     public void testLoginSuccess() {
         AuthRequest req = new AuthRequest("user", "pass");
