@@ -46,10 +46,6 @@ public class AuthControllerTests {
         controller = new AuthController(authManager, jwt, userService, userDetailsService);
     }
 
-    @Test
-    void testSomething() {
-        System.out.println("Running test...");
-    }
     // ✅ Test cho phương thức register
     @SuppressWarnings("deprecation")
     @Test
