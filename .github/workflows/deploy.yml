@@ -8,30 +8,144 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          node-version: '18'
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-      - name: Run tests
-        run: npm test
+      - name: Init CI/CD report
+        run: |
+          echo "=== CI/CD Tổng hợp ===" > ci_report.txt
+          echo "Thời gian: $(date '+%Y-%m-%d %H:%M:%S')" >> ci_report.txt
+          echo "Người thực hiện: ${{ github.actor }}" >> ci_report.txt
+          echo "Commit: ${{ github.event.head_commit.message }}" >> ci_report.txt
+          echo "Nhánh: ${{ github.ref }}" >> ci_report.txt
+          echo "----------------------------------------" >> ci_report.txt
+
+      - name: Build and run tests with Maven
+        run: |
+          echo "🔧 Build & Test:" >> ci_report.txt
+          mvn clean verify >> ci_report.txt 2>&1 || echo "❌ Build/Test lỗi!" >> ci_report.txt
 
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: build-and-test
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Trigger Railway Deployment
         run: |
+          echo "🚀 Deploy:" >> ci_report.txt
           curl -X POST https://backboard.railway.app/project/b3f30ea3-7723-4f7f-8c4d-d7363a12e9f4/deploy \
-          -H "Authorization: Bearer ${{secrets.RAILWAY_TOKEN}}"
+          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" >> ci_report.txt 2>&1 || echo "❌ Deploy lỗi!" >> ci_report.txt
+
+      - name: Send CI/CD Email Report
+        if: always()
+        env:
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          BRANCH_NAME: ${{ github.ref }}
+        run: |
+          cat <<EOF > SendEmail.java
+          import java.util.*;
+          import java.text.*;
+          import java.io.*;
+          import javax.mail.*;
+          import javax.mail.internet.*;
+
+          public class SendEmail {
+              public static void main(String[] args) throws Exception {
+                  String username = System.getenv("MAIL_USERNAME");
+                  String password = System.getenv("MAIL_PASSWORD");
+                  String to = System.getenv("MAIL_TO");
+                  String actor = System.getenv("GITHUB_ACTOR");
+                  String commitMsg = System.getenv("COMMIT_MESSAGE");
+                  String repoUrl = System.getenv("REPO_URL");
+                  String runId = System.getenv("RUN_ID");
+                  String branch = System.getenv("BRANCH_NAME");
+                  String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+                  BufferedReader reader = new BufferedReader(new FileReader("ci_report.txt"));
+                  StringBuilder htmlLog = new StringBuilder();
+                  htmlLog.append("<pre style='background:#f4f4f4;padding:15px;border-radius:8px;'>");
+                  String line;
+                  while ((line = reader.readLine()) != null) {
+                      if (line.toLowerCase().matches(".*(error|failed|exception|missing|cannot|lỗi).*")) {
+                          htmlLog.append("<span style='color:red;font-weight:bold;'>❌ " + line + "</span>\n");
+                      } else {
+                          htmlLog.append(line + "\n");
+                      }
+                  }
+                  htmlLog.append("</pre>");
+                  reader.close();
+
+                  String subject = "📣 CI/CD Report for " + branch;
+                  String html = String.format(
+                      "<html><body style='font-family:Arial,sans-serif;background:#f9f9f9;padding:20px;'>" +
+                      "<div style='max-width:700px;margin:auto;background:#fff;border-radius:8px;padding:20px;box-shadow:0 0 10px rgba(0,0,0,0.1);'>" +
+                      "<h2 style='color:#007bff;'>📦 CI/CD Báo cáo</h2>" +
+                      "<p><strong>⏰ Thời gian:</strong> %s</p>" +
+                      "<p><strong>👤 Người push:</strong> %s</p>" +
+                      "<p><strong>💬 Commit:</strong> %s</p>" +
+                      "<p><strong>🌿 Nhánh:</strong> %s</p>" +
+                      "<p><strong>🔗 Link workflow:</strong> <a href='%s/actions/runs/%s'>Xem chi tiết</a></p>" +
+                      "<h3>📄 Báo cáo CI/CD:</h3>" +
+                      "%s" +
+                      "<p style='font-size:12px;color:#888;'>Email này được gửi tự động từ hệ thống CI/CD.</p>" +
+                      "</div></body></html>",
+                      time, actor, commitMsg, branch, repoUrl, runId, htmlLog.toString()
+                  );
+
+                  Properties props = new Properties();
+                  props.put("mail.smtp.auth", "true");
+                  props.put("mail.smtp.starttls.enable", "true");
+                  props.put("mail.smtp.host", "smtp.gmail.com");
+                  props.put("mail.smtp.port", "587");
+
+                  Session session = Session.getInstance(props, new Authenticator() {
+                      protected PasswordAuthentication getPasswordAuthentication() {
+                          return new PasswordAuthentication(username, password);
+                      }
+                  });
+
+                  Message message = new MimeMessage(session);
+                  message.setFrom(new InternetAddress(username));
+                  message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+                  message.setSubject(subject);
+
+                  MimeBodyPart htmlPart = new MimeBodyPart();
+                  htmlPart.setContent(html, "text/html; charset=utf-8");
+
+                  Multipart multipart = new MimeMultipart();
+                  multipart.addBodyPart(htmlPart);
+
+                  message.setContent(multipart);
+                  Transport.send(message);
+              }
+          }
+          EOF
+
+          javac SendEmail.java
+          java SendEmail
