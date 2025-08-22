@@ -8,25 +8,33 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          node-version: '18'
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-      - name: Run tests
-        run: npm test
+      - name: Build and run tests with Maven
+        run: mvn clean verify
 
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: build-and-test
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -34,4 +42,4 @@ jobs:
       - name: Trigger Railway Deployment
         run: |
           curl -X POST https://backboard.railway.app/project/b3f30ea3-7723-4f7f-8c4d-d7363a12e9f4/deploy \
-          -H "Authorization: Bearer ${{secrets.RAILWAY_TOKEN}}"
+          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}"
