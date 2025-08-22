@@ -6,6 +6,7 @@ import com.example.demo.entity.RoleEntity;
 import com.example.demo.entity.Users;
 import com.example.demo.exception.ValidationException;
 import com.example.demo.repository.UserMapper;
+import com.example.demo.request.RequestDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -39,17 +40,26 @@ public class UserService implements IuserService {
     }
 
     @Override
-    public Users saveUser(Users user) {
-      List<String> errors = new ArrayList<>();
-      Users exitUsser = repository.findById(user.getUserId());
-      if(exitUsser != null) {
-        errors.add("userId đã tồn tại!");
-      }
-      if (!errors.isEmpty()) {
-        throw new ValidationException(errors);
+    public Users saveUser(RequestDto request) {
+      if (repository.existsByUserName(request.getUserName())) {
+        throw new IllegalArgumentException("Username đã tồn tại");
     }
+      Users user = Users.builder()
+          .userId(generateUserId())
+          .userName(request.getUserName())
+          .passWord(encoder.encode(request.getPassWord()))
+          .mail(request.getMail())
+          .isEnabled(true)
+          .roles(request.getRoles())
+          .build();
       repository.insert(user);
       logger.info("LOGGIN =>> create user done -> OK");
+      RoleEntity role = RoleEntity.builder()
+          .userId(user.getUserId())
+          .role(Role.USER.getValue())
+          .isActive(true)
+          .build();
+      repository.insertRole(role);
         return user;
     }
 

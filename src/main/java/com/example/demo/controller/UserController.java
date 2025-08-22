@@ -29,17 +29,8 @@ public class UserController {
         try {
             logger.info("LOGGIN =>> convert request to entity -> " + request);
 
-            // Chuyển request DTO thành entity
-            Users user = Users.builder()
-                    .userName(request.getUserName())
-                    .passWord(request.getPassWord())
-                    .mail(request.getMail())
-                    .roles(request.getRoles()) // nếu RequestDto có roles
-                    .isEnabled(true)
-                    .build();
-
             // Gọi service lưu user (giống register)
-            Users savedUser = userService.saveUser(user);
+            Users savedUser = userService.saveUser(request);
 
             // Trả về user vừa tạo
             return ResponseEntity.ok(savedUser);

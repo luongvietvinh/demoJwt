@@ -22,8 +22,8 @@
     </insert>
     
     <insert id="insertRole" parameterType="com.example.demo.entity.RoleEntity" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO role (user_id,role, create_time, is_active)
-        VALUES (#{userId}, #{role}, CURRENT_TIMESTAMP, #{isActive})
+        INSERT INTO user_role (user_id,role_code, create_time, is_active)
+        VALUES (#{userId}, #{role_code}, CURRENT_TIMESTAMP, #{isActive})
     </insert>
 
     <select id="findAll" resultMap="UserResultMap" parameterType="map">
