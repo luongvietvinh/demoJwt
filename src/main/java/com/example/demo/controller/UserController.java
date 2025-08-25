@@ -53,10 +53,10 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<Users> getUserById(@PathVariable String userId) {
-      logger.info("LOGGIN =>> start get detail user ->" + userId);
-        return userService.getUserById(userId)
+    @GetMapping("/{userName}")
+    public ResponseEntity<Users> getUserByName(@PathVariable String userName) {
+      logger.info("LOGGIN =>> start get detail user ->" + userName);
+        return userService.getUserByName(userName)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

@@ -91,7 +91,15 @@
 		    <version>5.12.0</version> <!-- cùng version với mockito-core bạn đang dùng -->
 		    <scope>test</scope>
 		</dependency>
-	    
+	     <!-- starter-mail -->
+	    <dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
 	    <!-- BCrypt -->
 	    <dependency>
 	      <groupId>org.springframework.security</groupId>

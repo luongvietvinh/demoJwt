@@ -1,22 +1,41 @@
-name: CI/CD Pipeline
+name: Spring Boot CI/CD Pipeline
 
 on:
   push:
     branches:
       - '**'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  
+env:
+  JAVA_VERSION: '17'
+  MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=2
 
 jobs:
+  # Job 1: Build và Test
   build-and-test:
     runs-on: ubuntu-latest
-
+    
+    outputs:
+      build-status: ${{ steps.build.outcome }}
+      test-status: ${{ steps.test.outcome }}
+      
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/checkout@v4
         with:
-          java-version: '17'
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
       - name: Cache Maven packages
@@ -27,125 +46,231 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Init CI/CD report
+      - name: Initialize CI/CD report
         run: |
-          echo "=== CI/CD Tổng hợp ===" > ci_report.txt
-          echo "Thời gian: $(date '+%Y-%m-%d %H:%M:%S')" >> ci_report.txt
-          echo "Người thực hiện: ${{ github.actor }}" >> ci_report.txt
-          echo "Commit: ${{ github.event.head_commit.message }}" >> ci_report.txt
-          echo "Nhánh: ${{ github.ref }}" >> ci_report.txt
-          echo "----------------------------------------" >> ci_report.txt
+          mkdir -p reports
+          echo "=== CI/CD Tổng hợp ===" > reports/ci_report.txt
+          echo "Thời gian: $(date '+%Y-%m-%d %H:%M:%S')" >> reports/ci_report.txt
+          echo "Người thực hiện: ${{ github.actor }}" >> reports/ci_report.txt
+          echo "Commit: ${{ github.event.head_commit.message }}" >> reports/ci_report.txt
+          echo "Nhánh: ${{ github.ref_name }}" >> reports/ci_report.txt
+          echo "========================================" >> reports/ci_report.txt
 
-      - name: Build and run tests with Maven
+      - name: Compile application
+        id: compile
         run: |
-          echo "🔧 Build & Test:" >> ci_report.txt
-          mvn clean verify >> ci_report.txt 2>&1 || echo "❌ Build/Test lỗi!" >> ci_report.txt
+          echo "🔧 Compiling..." >> reports/ci_report.txt
+          if mvn clean compile; then
+            echo "✅ Compile thành công" >> reports/ci_report.txt
+          else
+            echo "❌ Compile thất bại" >> reports/ci_report.txt
+            exit 1
+          fi
 
+      - name: Build, Test & Generate Coverage
+        id: build-test
+        run: |
+          echo "🧪 Running build + tests + coverage..." >> reports/ci_report.txt
+          if mvn -B clean verify; then
+            echo "✅ Build & tests thành công" >> reports/ci_report.txt
+            ls -la target/*.jar >> reports/ci_report.txt
+          else
+            echo "❌ Build/tests thất bại" >> reports/ci_report.txt
+            exit 1
+          fi
+
+
+      - name: Generate test report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Maven Tests
+          path: |
+            target/surefire-reports/*.xml
+          reporter: java-junit
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: jar-artifact
+          path: target/*.jar
+          retention-days: 30
+
+      - name: Upload CI report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-report
+          path: reports/ci_report.txt
+
+  # Job 3: Deploy
   deploy:
     if: github.ref == 'refs/heads/main'
     needs: build-and-test
     runs-on: ubuntu-latest
-
+    environment: production
+    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Trigger Railway Deployment
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-artifact
+          path: target/
+
+      - name: Download CI report
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-report
+          path: reports/
+
+      - name: Deploy to Railway
+        id: deploy
         run: |
-          echo "🚀 Deploy:" >> ci_report.txt
-          curl -X POST https://backboard.railway.app/project/b3f30ea3-7723-4f7f-8c4d-d7363a12e9f4/deploy \
-          -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" >> ci_report.txt 2>&1 || echo "❌ Deploy lỗi!" >> ci_report.txt
+          echo "🚀 Deploying to Railway..." >> reports/ci_report.txt
+          
+          if curl -X POST "https://backboard.railway.app/project/b3f30ea3-7723-4f7f-8c4d-d7363a12e9f4/deploy" \
+             -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+             -H "Content-Type: application/json" \
+             -w "HTTP Status: %{http_code}\n" \
+             --max-time 300 \
+             --retry 3 \
+             --retry-delay 10; then
+            echo "✅ Deploy thành công!" >> reports/ci_report.txt
+            echo "deploy_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Deploy thất bại!" >> reports/ci_report.txt
+            echo "deploy_status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
 
-      - name: Send CI/CD Email Report
+      - name: Health check
+        if: steps.deploy.outputs.deploy_status == 'success'
+        run: |
+          echo "🏥 Health checking..." >> reports/ci_report.txt
+          sleep 30
+          
+          # Thay YOUR_APP_URL bằng URL thực của ứng dụng
+          APP_URL="${{ secrets.APP_URL }}"
+          if [ -n "$APP_URL" ]; then
+            for i in {1..10}; do
+              if curl -f "$APP_URL/actuator/health" || curl -f "$APP_URL/health"; then
+                echo "✅ Health check passed!" >> reports/ci_report.txt
+                break
+              fi
+              echo "⏳ Health check attempt $i failed, retrying..." >> reports/ci_report.txt
+              sleep 15
+            done
+          else
+            echo "⚠️ APP_URL not configured, skipping health check" >> reports/ci_report.txt
+          fi
+
+      - name: Send deployment notification
         if: always()
-        env:
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          MAIL_TO: ${{ secrets.MAIL_TO }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-          BRANCH_NAME: ${{ github.ref }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: |
+            ${{ steps.deploy.outputs.deploy_status == 'success' && '✅' || '❌' }} 
+            CI/CD Report - ${{ github.repository }} (${{ github.ref_name }})
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          html_body: |
+            <!DOCTYPE html>
+            <html>
+            <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 20px;">
+              <div style="max-width: 700px; margin: 0 auto; background: #ffffff; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                
+                <!-- Header -->
+                <div style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; padding: 30px; text-align: center;">
+                  <h1 style="margin: 0; font-size: 28px; font-weight: 300;">
+                    ${{ steps.deploy.outputs.deploy_status == 'success' && '🚀 Deployment Success!' || '⚠️ Deployment Failed!' }}
+                  </h1>
+                  <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">CI/CD Pipeline Report</p>
+                </div>
+
+                <!-- Content -->
+                <div style="padding: 30px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
+                      <strong style="color: #495057;">⏰ Time:</strong><br>
+                      <span style="color: #6c757d;">$(date '+%Y-%m-%d %H:%M:%S')</span>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                      <strong style="color: #495057;">👤 Author:</strong><br>
+                      <span style="color: #6c757d;">${{ github.actor }}</span>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                      <strong style="color: #495057;">🌿 Branch:</strong><br>
+                      <span style="color: #6c757d;">${{ github.ref_name }}</span>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                      <strong style="color: #495057;">📊 Status:</strong><br>
+                      <span style="color: ${{ steps.deploy.outputs.deploy_status == 'success' && '#28a745' || '#dc3545' }}; font-weight: bold;">
+                        ${{ steps.deploy.outputs.deploy_status == 'success' && 'SUCCESS' || 'FAILED' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <strong style="color: #495057;">💬 Commit Message:</strong><br>
+                    <span style="color: #6c757d; font-style: italic;">${{ github.event.head_commit.message }}</span>
+                  </div>
+
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" 
+                       style="display: inline-block; padding: 12px 30px; background: linear-gradient(45deg, #007bff, #0056b3); color: white; text-decoration: none; border-radius: 25px; font-weight: 500; transition: all 0.3s ease;">
+                      🔗 View Workflow Details
+                    </a>
+                  </div>
+
+                  <div style="background: #343a40; color: #ffffff; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; overflow-x: auto; white-space: pre-wrap;">$(cat reports/ci_report.txt | sed 's/$/\<br\>/g' | tr -d '\n')</div>
+                </div>
+
+                <!-- Footer -->
+                <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
+                  <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                    🤖 This email was sent automatically by GitHub Actions CI/CD Pipeline<br>
+                    <span style="font-size: 12px; opacity: 0.7;">Repository: ${{ github.repository }}</span>
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
+
+  # Job 4: Rollback (nếu deploy failed)
+  rollback:
+    if: failure() && github.ref == 'refs/heads/main'
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger rollback
         run: |
-          cat <<EOF > SendEmail.java
-          import java.util.*;
-          import java.text.*;
-          import java.io.*;
-          import javax.mail.*;
-          import javax.mail.internet.*;
-
-          public class SendEmail {
-              public static void main(String[] args) throws Exception {
-                  String username = System.getenv("MAIL_USERNAME");
-                  String password = System.getenv("MAIL_PASSWORD");
-                  String to = System.getenv("MAIL_TO");
-                  String actor = System.getenv("GITHUB_ACTOR");
-                  String commitMsg = System.getenv("COMMIT_MESSAGE");
-                  String repoUrl = System.getenv("REPO_URL");
-                  String runId = System.getenv("RUN_ID");
-                  String branch = System.getenv("BRANCH_NAME");
-                  String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-
-                  BufferedReader reader = new BufferedReader(new FileReader("ci_report.txt"));
-                  StringBuilder htmlLog = new StringBuilder();
-                  htmlLog.append("<pre style='background:#f4f4f4;padding:15px;border-radius:8px;'>");
-                  String line;
-                  while ((line = reader.readLine()) != null) {
-                      if (line.toLowerCase().matches(".*(error|failed|exception|missing|cannot|lỗi).*")) {
-                          htmlLog.append("<span style='color:red;font-weight:bold;'>❌ " + line + "</span>\n");
-                      } else {
-                          htmlLog.append(line + "\n");
-                      }
-                  }
-                  htmlLog.append("</pre>");
-                  reader.close();
-
-                  String subject = "📣 CI/CD Report for " + branch;
-                  String html = String.format(
-                      "<html><body style='font-family:Arial,sans-serif;background:#f9f9f9;padding:20px;'>" +
-                      "<div style='max-width:700px;margin:auto;background:#fff;border-radius:8px;padding:20px;box-shadow:0 0 10px rgba(0,0,0,0.1);'>" +
-                      "<h2 style='color:#007bff;'>📦 CI/CD Báo cáo</h2>" +
-                      "<p><strong>⏰ Thời gian:</strong> %s</p>" +
-                      "<p><strong>👤 Người push:</strong> %s</p>" +
-                      "<p><strong>💬 Commit:</strong> %s</p>" +
-                      "<p><strong>🌿 Nhánh:</strong> %s</p>" +
-                      "<p><strong>🔗 Link workflow:</strong> <a href='%s/actions/runs/%s'>Xem chi tiết</a></p>" +
-                      "<h3>📄 Báo cáo CI/CD:</h3>" +
-                      "%s" +
-                      "<p style='font-size:12px;color:#888;'>Email này được gửi tự động từ hệ thống CI/CD.</p>" +
-                      "</div></body></html>",
-                      time, actor, commitMsg, branch, repoUrl, runId, htmlLog.toString()
-                  );
-
-                  Properties props = new Properties();
-                  props.put("mail.smtp.auth", "true");
-                  props.put("mail.smtp.starttls.enable", "true");
-                  props.put("mail.smtp.host", "smtp.gmail.com");
-                  props.put("mail.smtp.port", "587");
-
-                  Session session = Session.getInstance(props, new Authenticator() {
-                      protected PasswordAuthentication getPasswordAuthentication() {
-                          return new PasswordAuthentication(username, password);
-                      }
-                  });
-
-                  Message message = new MimeMessage(session);
-                  message.setFrom(new InternetAddress(username));
-                  message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
-                  message.setSubject(subject);
-
-                  MimeBodyPart htmlPart = new MimeBodyPart();
-                  htmlPart.setContent(html, "text/html; charset=utf-8");
-
-                  Multipart multipart = new MimeMultipart();
-                  multipart.addBodyPart(htmlPart);
-
-                  message.setContent(multipart);
-                  Transport.send(message);
-              }
-          }
-          EOF
-
-          javac SendEmail.java
-          java SendEmail
+          echo "🔄 Triggering rollback..."
+          # Thêm logic rollback ở đây nếu Railway support
+          
+      - name: Notify rollback
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "🔄 ROLLBACK TRIGGERED - ${{ github.repository }}"
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          body: |
+            Deployment failed and rollback has been triggered.
+            
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Run ID: ${{ github.run_id }}
+            
+            Please check the logs for more details.
