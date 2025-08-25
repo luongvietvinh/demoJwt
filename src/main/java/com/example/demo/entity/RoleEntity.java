@@ -11,7 +11,7 @@ import lombok.*;
 public class RoleEntity {
     private String userId;
     private String userName;
-    private String role;
+    private String roleCode;
     private Timestamp createTime;
     private Timestamp updateTime;
     private Timestamp deleteTime;

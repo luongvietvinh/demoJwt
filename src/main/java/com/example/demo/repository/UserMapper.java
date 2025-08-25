@@ -11,11 +11,11 @@ import com.example.demo.entity.Users;
 public interface UserMapper {
 
     int insert(Users user);
-    int insertRole(RoleEntity role);
+    int insertRole(List<RoleEntity> role);
 
     List<Users> findAll(@Param("limit") int limit, @Param("offset") int offset);
 
-    Users findById(String userId);
+    Optional<Users> findByName(String userName);
 
     void delete(String userId);
 
