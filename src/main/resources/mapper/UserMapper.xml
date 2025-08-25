@@ -12,7 +12,7 @@
 	    <result property="mail" column="mail"/>
 	    <result property="isEnabled" column="is_enabled"/>
 	    <collection property="roles" ofType="string">
-        	<result property="role" column="role_code"/>
+        	<result column="role_code"/>
     	</collection>
 	</resultMap>
 
@@ -21,24 +21,39 @@
         VALUES (#{userId}, #{userName}, #{passWord}, #{mail}, CURRENT_TIMESTAMP, #{userName})
     </insert>
     
-    <insert id="insertRole" parameterType="com.example.demo.entity.RoleEntity" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO user_role (user_id,role_code, create_time, is_active)
-        VALUES (#{userId}, #{role_code}, CURRENT_TIMESTAMP, #{isActive})
+    <insert id="insertRole" parameterType="java.util.List">
+        INSERT INTO user_role (user_id, role_code, create_time, is_active)
+    VALUES
+    <foreach collection="list" item="role" separator=",">
+        (#{role.userId}, #{role.roleCode}, CURRENT_TIMESTAMP, #{role.isActive})
+    </foreach>
     </insert>
 
     <select id="findAll" resultMap="UserResultMap" parameterType="map">
-    SELECT
-	     user_id, 
-	     user_name, 
-	     pass_word, 
-	     mail
-    FROM users
+    SELECT 
+         u.user_id, 
+	     u.user_name, 
+	     u.pass_word, 
+	     u.mail,
+	     u.is_enabled,
+		 r.role_code
+		 FROM users AS u
+		 JOIN user_role AS r ON u.user_id = r.user_id
     ORDER BY user_id
     LIMIT #{limit} OFFSET #{offset}
 </select>
 
-    <select id="findById" parameterType="string" resultMap="UserResultMap">
-        SELECT user_id, user_name, pass_word, mail FROM users WHERE user_id = #{userId}
+    <select id="findByName" parameterType="string" resultMap="UserResultMap">
+        SELECT 
+         u.user_id, 
+	     u.user_name, 
+	     u.pass_word, 
+	     u.mail,
+	     u.is_enabled,
+		 r.role_code
+		 FROM users AS u
+		 JOIN user_role AS r ON u.user_id = r.user_id
+		 WHERE u.user_name = #{userName}
     </select>
 
     <delete id="delete" parameterType="string">
