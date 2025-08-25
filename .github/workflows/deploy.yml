@@ -62,28 +62,18 @@ jobs:
             exit 1
           fi
 
-      - name: Run tests
-        id: test
+      - name: Build, Test & Generate Coverage
+        id: build-test
         run: |
-          echo "🧪 Running tests..." >> reports/ci_report.txt
-          if mvn -B test; then
-            echo "✅ Tests passed" >> reports/ci_report.txt
+          echo "🧪 Running build + tests + coverage..." >> reports/ci_report.txt
+          if mvn -B clean verify; then
+            echo "✅ Build & tests thành công" >> reports/ci_report.txt
+            ls -la target/*.jar >> reports/ci_report.txt
           else
-            echo "❌ Tests failed" >> reports/ci_report.txt
+            echo "❌ Build/tests thất bại" >> reports/ci_report.txt
             exit 1
           fi
 
-      - name: Build application
-        id: build
-        run: |
-          echo "📦 Building..." >> reports/ci_report.txt
-          if mvn clean package -DskipTests; then
-            echo "✅ Build thành công" >> reports/ci_report.txt
-            ls -la target/*.jar >> reports/ci_report.txt
-          else
-            echo "❌ Build thất bại" >> reports/ci_report.txt
-            exit 1
-          fi
 
       - name: Generate test report
         uses: dorny/test-reporter@v1
