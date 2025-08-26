@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký thành công</title>
+</head>
+<body style="font-family: Arial, sans-serif;">
+    <h2>Chào mừng, <span th:text="${userName}">Tên người dùng</span>!</h2>
+    <p>Tài khoản của bạn đã được tạo thành công trên hệ thống của chúng tôi.</p>
+    <p>Dưới đây là thông tin đăng nhập của bạn. Vui lòng bảo mật thông tin này!</p>
+    <ul>
+        <li><strong>Tên đăng nhập:</strong> <span th:text="${userName}"></span></li>
+        <li><strong>Mật khẩu:</strong> <span th:text="${passWord}"></span></li>
+    </ul>
+    <p>Cảm ơn bạn đã đăng ký!</p>
+</body>
+</html>
