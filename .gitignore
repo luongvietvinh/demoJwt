@@ -33,4 +33,4 @@ build/
 .vscode/
 
 # PostgreSQL runtime data
-postgres_data/
+/demoJwt-clean/postgres_data/
