@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.repository.FileRepository">
+
+    <!-- Insert single file -->
+    <insert id="insertFile" parameterType="com.example.demo.dto.FileDto">
+        INSERT INTO files (
+            uuid, 
+            user_id, 
+            user_name, 
+            contruction_id,
+            file_name, 
+            file_size, 
+            file_path, 
+            create_time
+        ) VALUES (
+            (CAST(#{file.uuId} AS UUID),
+            #{userId}, 
+            #{userName}, 
+            #{contructionId},
+            #{fileName}, 
+            #{fileSize}, 
+            #{filePath}, 
+            #{createTime}
+        )
+    </insert>
+
+    <!-- Insert batch files -->
+    <insert id="insertListFile" parameterType="java.util.List">
+        INSERT INTO files (
+            uuid, 
+            user_id, 
+            user_name, 
+            contruction_id,
+            file_name, 
+            file_size, 
+            file_path, 
+            create_time
+        ) VALUES
+        <foreach collection="files" item="file" separator=",">
+            (
+            CAST(#{file.uuId} AS UUID),
+                #{file.userId}, 
+                #{file.userName}, 
+                #{contructionId},
+                #{file.fileName}, 
+                #{file.fileSize}, 
+                #{file.filePath}, 
+                #{file.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- Get files by construction ID -->
+    <select id="getFilesByConstructionId" parameterType="String" 
+            resultType="com.example.demo.dto.FileDto">
+        SELECT 
+            uuid as uuId,
+            user_id as userId,
+            user_name as userName,
+            construction_id as constructionId,
+            file_name as fileName,
+            file_size as fileSize,
+            file_path as filePath,
+            create_time as createTime
+        FROM files 
+        WHERE construction_id = #{constructionId}
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- Delete file by ID -->
+     <delete id="deleteFile" parameterType="String">
+        DELETE FROM files WHERE uuid = CAST(#{uuId} AS UUID)
+    </delete>
+
+    <!-- Delete files by construction ID -->
+    <delete id="deleteFilesByConstructionId" parameterType="String">
+        DELETE FROM files WHERE construction_id = #{constructionId}
+    </delete>
+
+</mapper>

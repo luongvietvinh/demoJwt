@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# PostgreSQL runtime data
+/demoJwt-clean/postgres_data/

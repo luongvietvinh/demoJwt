@@ -1,5 +1,6 @@
 package com.example.demo.service.mail;
 
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,29 +23,28 @@ public class EmailService {
 
     // Annotation @Async để chạy tác vụ này trên một luồng riêng
     @Async
-    public void sendRegistrationSuccessEmail(String toEmail, String userName, String passWord) {
+    public void sendEmail(String toEmail, String subject,  String templateName, Map<String, Object> variables) {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
 
-            // Tạo context để truyền biến vào template Thymeleaf
+            // Tạo context để inject biến vào template
             Context context = new Context();
-            context.setVariable("userName", userName);
-            context.setVariable("passWord", passWord);
+            if (variables != null) {
+                variables.forEach(context::setVariable);
+            }
 
-            // Xử lý template
-            String htmlContent = templateEngine.process("MailTemplate", context);
+            // Render template
+            String htmlContent = templateEngine.process(templateName, context);
 
-            helper.setText(htmlContent, true); // true = gửi dạng HTML
+            helper.setText(htmlContent, true); // true = HTML
             helper.setTo(toEmail);
-            helper.setSubject("Chào mừng bạn! Đăng ký tài khoản thành công");
-            helper.setFrom("Admin@gmail.com"); // Email người gửi
+            helper.setSubject(subject);
+            helper.setFrom("Admin@gmail.com"); // Có thể đọc từ config thay vì hardcode
 
             javaMailSender.send(mimeMessage);
-            
+
         } catch (MessagingException e) {
-            // Log lỗi hoặc xử lý nếu gửi mail thất bại
-            // logger.error("Failed to send email", e);
             System.err.println("Gửi mail thất bại: " + e.getMessage());
         }
     }

@@ -28,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
+import com.example.demo.security.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -64,11 +65,11 @@ public final class CommonUtils {
      *
      * @return User principal object
      */
-    public static Object getUserLogin() {
-        return SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-    }
+    public static CustomUserDetails getUserLogin() {
+      return (CustomUserDetails) SecurityContextHolder.getContext()
+              .getAuthentication()
+              .getPrincipal();
+  }
 
     // ============================== ✅ Validation ==============================
 

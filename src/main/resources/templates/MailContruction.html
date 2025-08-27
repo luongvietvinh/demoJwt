@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${subject}">Đăng ký công trình thành công</title>
+</head>
+<body style="font-family: Arial, sans-serif;">
+    <h2>Chào mừng, <span th:text="${userName}">Tên người dùng</span>!</h2>
+    <p>Công trình của bạn đã đăngk ý thành công trên hệ thống của chúng tôi.</p>
+    <p>Dưới đây là thông tin công trình của bạn. Vui lòng bảo mật thông tin này!</p>
+    <ul>
+        <li><strong>contructionId:</strong> <span th:text="${contructionId}"></span></li>
+        <li><strong>Tên công trình:</strong> <span th:text="${contrutionName}"></span></li>
+    </ul>
+    <p>Cảm ơn bạn đã đăng ký!</p>
+</body>
+</html>
