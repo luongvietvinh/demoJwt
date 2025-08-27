@@ -29,13 +29,6 @@ public class AuthController {
   private final AuthenticationManager authManager;
   private final JwtTokenUtil jwt;
   private final CustomUserDetailsService userDetailsService;
-  
-//  public AuthController(AuthenticationManager authManager, JwtTokenUtil jwt, CustomUserDetailsService userDetailsService) {
-//    this.authManager = authManager;
-//    this.jwt = jwt;
-//    this.userDetailsService = userDetailsService;
-//  }
-
 
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {

@@ -20,9 +20,7 @@ import com.example.demo.service.mail.EmailService;
 @Service
 public class ContructionService implements IcontructionService {
 
-
   private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-
 
   @Autowired
   private EmailService emailService;
@@ -32,27 +30,6 @@ public class ContructionService implements IcontructionService {
   private ContructionRepository repository;
   @Autowired
   private FileRepository fileRepository;
-
-  // private String generateUserId() {
-  // StringBuilder sb = new StringBuilder(6);
-  // for (int i = 0; i < 6; i++) {
-  // sb.append(ALPHANUM.charAt(RANDOM.nextInt(ALPHANUM.length())));
-  // }
-  // return sb.toString();
-  // }
-
-  // @Override
-  // @Transactional
-  // public ContructionDto createContruction(ContructionDto dto) {
-  // int count = repository.createContruction(dto);
-  // if(count <= 0) {
-  // throw new IllegalArgumentException("Inser thất bại");
-  // }
-  // fileRepository.insertListFile(dto.getFiles());
-  // ContructionDto contruction = repository.getContructionById(dto.getContructionId());
-  // return contruction;
-  // }
-
 
   @Transactional
   public ContructionDto createContruction(ContructionDto dto) {
@@ -95,17 +72,17 @@ public class ContructionService implements IcontructionService {
 
   private void sendRegistrationEmail(ContructionDto dto) {
     try {
-      Map<String,Object> variables = new HashMap<>();
+      Map<String, Object> variables = new HashMap<>();
       String subject = "Đăng ký công trình thành công";
       variables.put("userName", dto.getUserName());
       variables.put("contructionId", dto.getContructionId());
       variables.put("contructionName", dto.getContructionName());
       variables.put("subject", subject);
-      
+
       String template = "MailContruction";
-      
+
       emailService.sendEmail(dto.getMail(), subject,
-          template,variables );
+          template, variables);
       logger.info("SEND MAIL success to user {}", dto.getUserName());
     } catch (Exception e) {
       logger.error("Không thể gửi email chào mừng cho user: {}", dto.getUserName(), e);

@@ -37,7 +37,6 @@ public class ContructionController {
 
   private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-  @Autowired
   private final ContructionService contructionService;
 
   public ContructionController(ContructionService contructionService) {
@@ -46,9 +45,8 @@ public class ContructionController {
 
   @PostMapping("/create")
   @PreAuthorize("hasRole('USER')")
-  public ResponseEntity<?> createContruction(
+  public ResponseEntity<Object> createContruction(
       @RequestBody @Valid ContructionReigisterRequest request) {
-    logger.info("LOGGIN =>> convert request to dto -> " + request);
     CustomUserDetails userDetails = CommonUtils.getUserLogin();
     String contructionId = RandomStringUtils.randomAlphabetic(8);
     String userId = userDetails.getUserId();
@@ -63,7 +61,7 @@ public class ContructionController {
 
   @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('USER')")
-  public ResponseEntity<?> createContruction(
+  public ResponseEntity<Object> createContruction(
       @RequestPart("request") @Valid ContructionReigisterRequest request,
       @RequestPart(value = "files", required = false) List<MultipartFile> files) {
 
