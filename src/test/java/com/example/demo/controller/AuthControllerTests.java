@@ -18,6 +18,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.request.AuthRequest;
 import com.example.demo.security.CustomUserDetails;
@@ -26,6 +28,7 @@ import com.example.demo.security.JwtTokenUtil;
 import com.example.demo.service.UserService;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class AuthControllerTests {
   
     private AuthenticationManager authManager;
