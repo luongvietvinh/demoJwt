@@ -1,8 +1,9 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class ContructionService implements IcontructionService {
   // }
 
 
+  @Transactional
   public ContructionDto createContruction(ContructionDto dto) {
     List<FileDto> uploadedFiles = Collections.emptyList();
 
@@ -63,6 +65,7 @@ public class ContructionService implements IcontructionService {
             s3FileService.uploadFiles(dto.getUploadFiles(), dto.getUserID(), dto.getUserName());
         dto.setFiles(uploadedFiles);
       }
+      logger.info("ContructionId ở DTO trước khi insert: " + dto.getContructionId());
 
       // Insert construction
       int count = repository.createContruction(dto);
@@ -92,8 +95,17 @@ public class ContructionService implements IcontructionService {
 
   private void sendRegistrationEmail(ContructionDto dto) {
     try {
-      emailService.sendRegistrationSuccessEmail(dto.getMail(), dto.getUserName(),
-          dto.getContructionId());
+      Map<String,Object> variables = new HashMap<>();
+      String subject = "Đăng ký công trình thành công";
+      variables.put("userName", dto.getUserName());
+      variables.put("contructionId", dto.getContructionId());
+      variables.put("contructionName", dto.getContructionName());
+      variables.put("subject", subject);
+      
+      String template = "MailContruction";
+      
+      emailService.sendEmail(dto.getMail(), subject,
+          template,variables );
       logger.info("SEND MAIL success to user {}", dto.getUserName());
     } catch (Exception e) {
       logger.error("Không thể gửi email chào mừng cho user: {}", dto.getUserName(), e);
@@ -116,8 +128,8 @@ public class ContructionService implements IcontructionService {
 
   @Override
   public Optional<ContructionDto> getContructionById(String contructionId) {
-    // TODO Auto-generated method stub
-    return Optional.empty();
+    ContructionDto construction = repository.getContructionById(contructionId);
+    return Optional.of(construction);
   }
 
   @Override

@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -12,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.request.RegisterRequest;
 import com.example.demo.entity.RoleEntity;
 import com.example.demo.entity.Users;
 import com.example.demo.repository.UserMapper;
@@ -68,12 +70,17 @@ public class UserService implements IuserService {
     // GỌI GỬI EMAIL SAU KHI MỌI THỨ ĐÃ LƯU THÀNH CÔNG
     // Gửi mật khẩu gốc (chưa mã hóa) từ request
     try {
-      emailService.sendRegistrationSuccessEmail(
-          user.getMail(),
-          user.getUserName(),
-          request.getPassWord() // Lấy mật khẩu gốc từ DTO
-
-      );
+      Map<String,Object> variables = new HashMap<>();
+      String subject = "Đăng ký user thành công";
+      variables.put("userName", user.getUserName());
+      variables.put("passWord", request.getPassWord());
+      variables.put("subject", subject);
+      
+      String template = "MailTeamplate";
+      
+      emailService.sendEmail(user.getMail(), subject,
+          template,variables );
+      
       logger.info("LOGGIN =>> SEND MAIL success");
     } catch (Exception e) {
       // Dù gửi mail thất bại, cũng không nên làm hỏng transaction đăng ký

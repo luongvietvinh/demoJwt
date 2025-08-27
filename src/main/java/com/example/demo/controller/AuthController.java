@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,37 +13,29 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.demo.dto.AuthRequest;
 import com.example.demo.dto.AuthResponse;
-import com.example.demo.dto.RefreshRequest;
-import com.example.demo.dto.RegisterRequest;
 import com.example.demo.dto.UserInfo;
-import com.example.demo.entity.Users;
+import com.example.demo.dto.request.AuthRequest;
+import com.example.demo.dto.request.RefreshRequest;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.security.JwtTokenUtil;
-import com.example.demo.service.UserService;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AuthController {
-
   private final AuthenticationManager authManager;
   private final JwtTokenUtil jwt;
-  private final UserService userService;
   private final CustomUserDetailsService userDetailsService;
+  
+//  public AuthController(AuthenticationManager authManager, JwtTokenUtil jwt, CustomUserDetailsService userDetailsService) {
+//    this.authManager = authManager;
+//    this.jwt = jwt;
+//    this.userDetailsService = userDetailsService;
+//  }
 
-  @PostMapping("/register")
-  public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
-    try {
-      Users u = userService.register(req);
-      return ResponseEntity.ok("Đăng ký thành công: " + u);
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(e.getMessage());
-    }
-  }
 
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest req) {
