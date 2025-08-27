@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import com.example.demo.config.FakeS3Config;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.dto.request.AuthRequest;
 import com.example.demo.security.CustomUserDetails;
@@ -29,6 +31,7 @@ import com.example.demo.service.UserService;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(FakeS3Config.class)
 public class AuthControllerTests {
   
     private AuthenticationManager authManager;
