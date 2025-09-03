@@ -379,7 +379,7 @@ public final class CommonUtils {
                 .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         SimpleModule module = new SimpleModule();
         module.addDeserializer(String.class, new CustomStringDeserializer());
-        module.addSerializer(Timestamp.class, new CustomTimestampSerializer());
+        module.addDeserializer(Timestamp.class, new CustomTimestampDeserializer());
         objectMapper.registerModule(module);
     }
 

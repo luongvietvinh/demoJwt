@@ -109,8 +109,9 @@ public class UserService implements IuserService {
   }
 
   @Override
-  public void deleteUser(String id) {
-    repository.delete(id);
+  public void deleteUser(String userId) {
+    repository.delete(userId);
+    repository.deleteRoleByUserId(userId);
   }
 
   @Override

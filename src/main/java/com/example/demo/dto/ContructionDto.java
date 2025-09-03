@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.request.ContructionReigisterRequest;
 import com.example.demo.dto.request.ContructionUpdateRequest;
+import com.example.demo.utils.CustomTimestampDeserializer;
+import com.example.demo.utils.DateTimeUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -12,9 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.example.demo.utils.CustomTimestampSerializer;
-import com.example.demo.utils.DateTimeUtils;
-import com.example.demo.utils.CustomTimestampDeserializer;
 
 // 📨 Body cho /auth/register
 @Data
@@ -30,9 +29,9 @@ public class ContructionDto {
     private String phoneNumber;
     private String zipCode;
     private String mail;
-    @JsonSerialize(using = CustomTimestampSerializer.class)
+    @JsonDeserialize(using = CustomTimestampDeserializer.class)
     private Timestamp createdAt;
-    @JsonSerialize(using = CustomTimestampSerializer.class)
+    @JsonDeserialize(using = CustomTimestampDeserializer.class)
     private Timestamp updatedAt;
     
     private List<FileDto> files;
@@ -67,7 +66,7 @@ public class ContructionDto {
           .zipCode(request.getZipCode())
           .mail(request.getMail())
           .uploadFiles(request.getUploadFiles())
-          .updatedAt(DateTimeUtils.toTimestamp(request.getUpdatedAt()))
+          .updatedAt(DateTimeUtils.toTimestamp(request.getUpdateAt()))
           .build();
     }
     

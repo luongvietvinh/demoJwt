@@ -1,27 +1,20 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.ibatis.javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.amazonaws.services.kms.model.transform.NotFoundExceptionUnmarshaller;
 import com.example.demo.dto.ContructionDto;
 import com.example.demo.dto.FileDiffResult;
 import com.example.demo.dto.FileDto;
-import com.example.demo.entity.Users;
 import com.example.demo.repository.ContructionRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.service.impl.FileSyncCommonService;
@@ -120,25 +113,48 @@ public class ContructionService implements IcontructionService {
   }
 
   @Override
+  @Transactional
   public void deleteContruction(String contructionId) {
-    // TODO Auto-generated method stub
+    logger.info("Request to delete construction with id={}", contructionId);
+
+    ContructionDto construction = repository.getContructionById(contructionId);
+    if (construction == null) {
+      logger.warn("Construction with id={} not found", contructionId);
+        throw new IllegalArgumentException("Construction not found with id: " + contructionId);
+    }
+
+    // Xóa construction
+    repository.deleteContruction(contructionId);
+    logger.info("Deleted construction record with id={}", contructionId);
+
+    // Xử lý file nếu có
+    if (construction.getFiles() != null && !construction.getFiles().isEmpty()) {
+            // Xóa trên S3
+            s3FileService.deleteFiles(construction.getFiles());
+            logger.info("Deleted {} files from S3 for construction id={}", construction.getFiles().size(), contructionId);
+
+            // Xóa trong DB
+            List<String> uuids = construction.getFiles().stream()
+                                        .map(FileDto::getUuId)
+                                        .toList();
+            fileRepository.deleteFilesByUuids(uuids);
+            logger.info("Deleted {} files from DB for construction id={}", uuids.size(), contructionId);
+    }
 
   }
 
   @Transactional
-  public ContructionDto updateContruction(ContructionDto dto) throws Exception {
+  public ContructionDto updateContruction(ContructionDto dto) {
       FileDiffResult diff = new FileDiffResult(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
       try {
           if (!checkExistsContruction(dto.getContructionId())) {
-              throw new NotFoundException("Công trình không tồn tại: " + dto.getContructionId());
+              throw new IllegalArgumentException("Công trình không tồn tại: " + dto.getContructionId());
           }
 
           diff = fileSyncService.syncFiles(dto);
 
           int updated = repository.updateContruction(dto);
-          if (updated <= 0) {
-            throw new OptimisticLockingFailureException("Dữ liệu đã bị thay đổi bởi người khác, vui lòng tải lại!");
-          }
+          if (updated <= 0) throw new IllegalArgumentException("Update construction thất bại");
 
           if (!diff.getToInsert().isEmpty()) {
               fileRepository.insertListFile(diff.getToInsert(), dto.getContructionId());

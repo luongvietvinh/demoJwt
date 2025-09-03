@@ -57,7 +57,11 @@
     </select>
 
     <delete id="delete" parameterType="string">
-        DELETE FROM users WHERE id = #{id}
+        DELETE FROM users WHERE user_id = #{userId}
+    </delete>
+    
+    <delete id="deleteRoleByUserId" parameterType="string">
+        DELETE FROM user_role WHERE user_id = #{userId}
     </delete>
 
     <update id="update" parameterType="com.example.demo.entity.Users">

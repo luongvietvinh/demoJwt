@@ -50,7 +50,8 @@
                 #{file.fileName}, 
                 #{file.fileSize}, 
                 #{file.filePath}, 
-                #{file.createTime}
+                #{file.createTime},
+                CURRENT_TIMESTAMP
                 
             )
         </foreach>
