@@ -116,43 +116,25 @@ public class UserService implements IuserService {
 
   @Override
   public Users updateUser(Users user) {
-    Optional.ofNullable(repository.findByName(user.getUserName()))
-        .orElseThrow(() -> new IllegalArgumentException("User không tồn tại"));
+    Optional.ofNullable(repository.findByUserId(user.getUserId())
+        .orElseThrow(() -> new IllegalArgumentException("User không tồn tại")));
     repository.update(user);
-    logger.info("LOGGIN =>> Update user" + user.getUserName() + " done -> OK");
-    return user;
-  }
-
-
-  @Transactional
-  public Users register(RegisterRequest req) {
-    if (repository.existsByUserName(req.getUserName())) {
-      throw new IllegalArgumentException("Username đã tồn tại");
+    logger.info("=>>> UPDATE user" + user.getUserName() + " done -> OK");
+    // check update /delete role
+    if(user.getRoles()!= null && !user.getRoles().isEmpty()) {
+      repository.deleteRoleByUserId(user.getUserId());
     }
-
-
-    Set<String> roles = (req.getRoles() == null || req.getRoles().isEmpty())
-        ? Collections.emptySet()
-        : req.getRoles();
-
-    // settuser
-    Users user = Users.builder()
-        .userId(generateUserId())
-        .userName(req.getUserName())
-        .passWord(encoder.encode(req.getPassWord()))
-        .mail(null)
-        .isEnabled(true)
-        .roles(roles)
-        .build();
-    List<RoleEntity> roleEntities = req.getRoles().stream()
+    List<RoleEntity> roleEntities = user.getRoles().stream()
         .map(role -> RoleEntity.builder()
             .userId(user.getUserId())
+            .userName(user.getUserName())
             .roleCode(role)
             .isActive(true)
             .build())
         .collect(Collectors.toList());
-    repository.insert(user);
+
     repository.insertRole(roleEntities);
+    logger.info("INSERT ROLE =>> Update user" + user.getUserName() + " done -> OK");
     return user;
   }
 

@@ -16,12 +16,11 @@ public interface UserMapper {
     List<Users> findAll(@Param("limit") int limit, @Param("offset") int offset);
 
     Optional<Users> findByName(String userName);
+    Optional<Users> findByUserId(String userId);
 
     void delete(String userId);
 
     void update(Users user);
-    
-    Optional<Users> findByUserName(String userName);
     
     boolean existsByUserName(String userName);
     

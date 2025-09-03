@@ -14,7 +14,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserMapper userRepository;
 
     @Override public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
-        Users u = userRepository.findByUserName(userName)
+        Users u = userRepository.findByName(userName)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy user: " + userName));
         return new CustomUserDetails(u);
     }

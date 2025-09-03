@@ -5,91 +5,103 @@
 
 <mapper namespace="com.example.demo.repository.UserMapper">
 
-    <resultMap id="UserResultMap" type="com.example.demo.entity.Users">
-	    <id property="userId" column="user_id"/>
-	    <result property="userName" column="user_name"/>
-	    <result property="passWord" column="pass_word"/>
-	    <result property="mail" column="mail"/>
-	    <result property="isEnabled" column="is_enabled"/>
-	    <collection property="roles" ofType="string">
-        	<result column="role_code"/>
-    	</collection>
+	<resultMap id="UserResultMap"
+		type="com.example.demo.entity.Users">
+		<id property="userId" column="user_id" />
+		<result property="userName" column="user_name" />
+		<result property="passWord" column="pass_word" />
+		<result property="mail" column="mail" />
+		<result property="isEnabled" column="is_enabled" />
+		<collection property="roles" ofType="string">
+			<result column="role_code" />
+		</collection>
 	</resultMap>
 
-    <insert id="insert" parameterType="com.example.demo.entity.Users" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO users (user_id, user_name,pass_word,mail, created_at, create_user)
-        VALUES (#{userId}, #{userName}, #{passWord}, #{mail}, CURRENT_TIMESTAMP, #{userName})
-    </insert>
-    
-    <insert id="insertRole" parameterType="java.util.List">
-        INSERT INTO user_role (user_id, user_name, role_code, create_time, is_active)
-    VALUES
-    <foreach collection="list" item="role" separator=",">
-        (#{role.userId}, #{role.userName}, #{role.roleCode}, CURRENT_TIMESTAMP, #{role.isActive})
-    </foreach>
-    </insert>
+	<insert id="insert"
+		parameterType="com.example.demo.entity.Users" useGeneratedKeys="true"
+		keyProperty="userId">
+		INSERT INTO users (user_id, user_name,pass_word,mail, created_at,
+		create_user, update_at)
+		VALUES (#{userId}, #{userName}, #{passWord}, #{mail}, CURRENT_TIMESTAMP,
+		#{userName},CURRENT_TIMESTAMP )
+	</insert>
 
-    <select id="findAll" resultMap="UserResultMap" parameterType="map">
-    SELECT 
-         u.user_id, 
-	     u.user_name, 
-	     u.pass_word, 
-	     u.mail,
-	     u.is_enabled,
-		 r.role_code
-		 FROM users AS u
-		 JOIN user_role AS r ON u.user_id = r.user_id
-    ORDER BY user_id
-    LIMIT #{limit} OFFSET #{offset}
-</select>
+	<insert id="insertRole" parameterType="java.util.List">
+		INSERT INTO user_role (user_id, user_name, role_code, create_time,
+		is_active)
+		VALUES
+		<foreach collection="list" item="role" separator=",">
+			(#{role.userId}, #{role.userName}, #{role.roleCode},
+			CURRENT_TIMESTAMP, #{role.isActive})
+		</foreach>
+	</insert>
 
-    <select id="findByName" parameterType="string" resultMap="UserResultMap">
-        SELECT 
-         u.user_id, 
-	     u.user_name, 
-	     u.pass_word, 
-	     u.mail,
-	     u.is_enabled,
-		 r.role_code
-		 FROM users AS u
-		 JOIN user_role AS r ON u.user_id = r.user_id
-		 WHERE u.user_name = #{userName}
-    </select>
+	<select id="findAll" resultMap="UserResultMap"
+		parameterType="map">
+		SELECT
+			u.user_id,
+			u.user_name,
+			u.pass_word,
+			u.mail,
+			u.is_enabled,
+			r.role_code
+		FROM users AS u
+		JOIN user_role AS r ON u.user_id = r.user_id
+		ORDER BY user_id
+		LIMIT #{limit} OFFSET #{offset}
+	</select>
 
-    <delete id="delete" parameterType="string">
-        DELETE FROM users WHERE user_id = #{userId}
-    </delete>
-    
-    <delete id="deleteRoleByUserId" parameterType="string">
-        DELETE FROM user_role WHERE user_id = #{userId}
-    </delete>
+	<select id="findByName" parameterType="string"
+		resultMap="UserResultMap">
+		SELECT
+			u.user_id,
+			u.user_name,
+			u.pass_word,
+			u.mail,
+			u.is_enabled,
+			r.role_code
+		FROM users AS u
+		JOIN user_role AS r ON u.user_id = r.user_id
+		WHERE u.user_name = #{userName}
+	</select>
 
-    <update id="update" parameterType="com.example.demo.entity.Users">
-        UPDATE users
-        SET 
-        	user_name = #{userName}, 
-        	pass_word = #{passWord},
-        	mail = #{mail}
-        WHERE user_id = #{userId}
-    </update>
-    
-    <select id="findByUserName" parameterType="string" resultMap="UserResultMap">
-        SELECT 
-         u.user_id, 
-	     u.user_name, 
-	     u.pass_word, 
-	     u.mail,
-	     u.is_enabled,
-		 r.role_code
-		 FROM users AS u
-		 JOIN user_role AS r ON u.user_id = r.user_id
-		 WHERE u.user_name = #{userName}
-    </select>
-    
-    <select id="existsByUserName" parameterType="string" resultType="boolean">
-	    SELECT COUNT(*) > 0
-	    FROM users
-	    WHERE user_name = #{userName}
+	<delete id="delete" parameterType="string">
+		DELETE FROM users WHERE user_id = #{userId}
+	</delete>
+
+	<delete id="deleteRoleByUserId" parameterType="string">
+		DELETE FROM user_role WHERE user_id = #{userId}
+	</delete>
+
+	<update id="update"
+		parameterType="com.example.demo.entity.Users">
+		UPDATE users
+		SET
+		user_name = #{userName},
+		mail = #{mail},
+		update_at = CURRENT_TIMESTAMP
+		WHERE user_id = #{userId} AND update_at = #{updateAt}
+	</update>
+
+	<select id="findByUserId" parameterType="string"
+		resultMap="UserResultMap">
+		SELECT
+		u.user_id,
+		u.user_name,
+		u.pass_word,
+		u.mail,
+		u.is_enabled,
+		r.role_code
+		FROM users AS u
+		JOIN user_role AS r ON u.user_id = r.user_id
+		WHERE u.user_id = #{userId}
+	</select>
+
+	<select id="existsByUserName" parameterType="string"
+		resultType="boolean">
+		SELECT COUNT(*) > 0
+		FROM users
+		WHERE user_name = #{userName}
 	</select>
 
 </mapper>
