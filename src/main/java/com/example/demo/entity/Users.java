@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import java.util.Set;
 import java.util.stream.Collectors;
 import com.example.demo.Role;
+import com.example.demo.dto.request.UpdateUserRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,6 +27,16 @@ public class Users {
       return roles.stream()
           .map(Role::fromValue)
           .collect(Collectors.toSet());
+  }
+    
+  public static Users convertRequestToEntity(UpdateUserRequest request) {
+    Users entity = Users.builder()
+        .userId(request.getUserId())
+        .userName(request.getUserName())
+        .passWord(request.getPassWord())
+        .roles(request.getRoles())
+        .build();
+    return entity;
   }
 
 }

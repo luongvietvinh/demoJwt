@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.request.UpdateUserRequest;
 import com.example.demo.entity.Users;
 import com.example.demo.request.RequestDto;
 import com.example.demo.service.UserService;
@@ -24,7 +25,7 @@ public class UserController {
         this.userService = userService;
     }
     @PostMapping("/create")
-    @PreAuthorize("hasRole('USER')")
+//    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createUser(@RequestBody @Valid RequestDto request) {
         try {
             logger.info("LOGGIN =>> convert request to entity -> " + request);
@@ -46,9 +47,10 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Users>> getAllUsers(
         @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "5") int size) {
+        @RequestParam(defaultValue = "10") int size) {
       List<Users> users = userService.getAllUsers(page, size);
         return ResponseEntity.ok(users);
     }
@@ -62,7 +64,8 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<Users> updateUser(@RequestBody @Valid RequestDto request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Users> updateUser(@RequestBody @Valid UpdateUserRequest request) {
       logger.info("LOGGIN Start UPDATE=>> convert request to entity ->" + request);
       Users user = Users.builder()
           .userId(request.getUserId())
@@ -73,6 +76,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();

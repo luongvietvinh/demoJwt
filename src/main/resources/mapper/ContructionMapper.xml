@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.repository.ContructionRepository">
+
+
+	<resultMap id="ContructionResultMap" type="com.example.demo.dto.ContructionDto">
+    <id property="contructionId" column="contructionId"/>
+    <result property="userID" column="userID"/>
+    <result property="userName" column="userName"/>
+    <result property="contructionName" column="contructionName"/>
+    <result property="address" column="address"/>
+    <result property="phoneNumber" column="phoneNumber"/>
+    <result property="zipCode" column="zipCode"/>
+    <result property="mail" column="mail"/>
+    <result property="createdAt" column="createdAt"/>
+    <result property="updatedAt" column="updatedAt"/>
+    
+    <collection property="files" ofType="com.example.demo.dto.FileDto">
+        <result property="uuId" column="fileUuId"/>
+        <result property="contructionId" column="fileContructionId"/>
+        <result property="fileName" column="fileName"/>
+        <result property="fileSize" column="fileSize"/>
+        <result property="filePath" column="filePath"/>
+        <result property="createTime" column="fileCreateTime"/>
+    </collection>
+</resultMap>
+    <!-- Insert single contruction -->
+    <insert id="createContruction" parameterType="com.example.demo.dto.ContructionDto">
+        INSERT INTO contruction (
+            contruction_id,
+            user_id,
+            user_name,
+            contruction_name,
+            address,
+            phone_number,
+            zip_code,
+            mail,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{contructionId},
+            #{userID},
+            #{userName},
+            #{contructionName},
+            #{address},
+            #{phoneNumber},
+            #{zipCode},
+            #{mail},
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+        )
+    </insert>
+
+    <!-- Insert batch contructions -->
+    <insert id="insertListContruction" parameterType="java.util.List">
+        INSERT INTO contruction (
+            contruction_id,
+            user_id,
+            user_name,
+            contruction_name,
+            address,
+            phone_number,
+            zip_code,
+            mail
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.contructionId},
+                #{item.userID},
+                #{item.userName},
+                #{item.contructionName},
+                #{item.address},
+                #{item.phoneNumber},
+                #{item.zipCode},
+                #{item.mail}
+            )
+        </foreach>
+    </insert>
+
+    <!-- Select list contructions (with pagination) -->
+    <select id="getLisstContruction" resultMap="ContructionResultMap">
+        SELECT 
+		  C.contruction_id AS contructionId,
+			C.user_id AS userID,
+			C.user_name AS userName,
+			C.contruction_name AS contructionName,
+			C.address,
+			C.phone_number AS phoneNumber,
+			C.zip_code AS zipCode,
+			C.mail,
+			C.created_at AS createdAt,
+			C.updated_at AS updatedAt,
+			f.uuid AS fileUuId,
+			f.contruction_id AS fileContructionId,
+			f.file_name AS fileName,
+			f.file_size AS fileSize,
+			f.file_path AS filePath,
+			f.create_time AS fileCreateTime 
+		FROM
+		 (
+		 SELECT 
+			contruction_id,
+			user_id,
+			user_name,
+			contruction_name,
+			address,
+			phone_number,
+			zip_code,
+			mail,
+			created_at,
+			updated_at	
+		 FROM contruction
+		 ORDER BY contruction_name
+		    LIMIT #{limit} OFFSET #{offset}
+		) c
+		LEFT JOIN files f ON c.contruction_id = f.contruction_id
+		ORDER BY c.contruction_name;
+    </select>
+
+    <!-- Select contruction by ID -->
+    <select id="getContructionById" parameterType="string" resultMap="ContructionResultMap">
+    SELECT 
+        c.contruction_id   AS contructionId,
+        c.user_id          AS userID,
+        c.user_name        AS userName,
+        c.contruction_name AS contructionName,
+        c.address,
+        c.phone_number     AS phoneNumber,
+        c.zip_code         AS zipCode,
+        c.mail,
+        c.created_at        AS createdAt,
+        c.updated_at        AS updatedAt,
+        f.uuid             AS fileUuId,       <!-- sửa lại từ uu_id -->
+        f.contruction_id   AS fileContructionId,       <!-- sửa lại từ uu_id -->
+        f.file_name        AS fileName,
+        f.file_size        AS fileSize,
+        f.file_path        AS filePath,
+        f.create_time      AS fileCreateTime
+    FROM contruction c
+    LEFT JOIN files f ON c.contruction_id = f.contruction_id
+    WHERE c.contruction_id = #{contructionId}
+</select>
+
+    <!-- Delete contruction by ID -->
+    <delete id="deleteContruction" parameterType="string">
+        DELETE FROM contruction WHERE contruction_id = #{contructionId}
+    </delete>
+
+    <!-- Update contruction -->
+    <update id="updateContruction" parameterType="com.example.demo.dto.ContructionDto">
+        UPDATE contruction
+        SET
+            user_id          = #{userID},
+            user_name        = #{userName},
+            contruction_name = #{contructionName},
+            address          = #{address},
+            phone_number     = #{phoneNumber},
+            zip_code         = #{zipCode},
+            mail             = #{mail},
+            updated_at       = CURRENT_TIMESTAMP
+        WHERE contruction_id = #{contructionId} AND updated_at = #{updatedAt}
+    </update>
+
+    <!-- Check if contruction exists -->
+    <select id="existsByContructionId" parameterType="string" resultType="boolean">
+        SELECT COUNT(1) > 0
+        FROM contruction
+        WHERE contruction_id = #{contructionId}
+    </select>
+
+</mapper>

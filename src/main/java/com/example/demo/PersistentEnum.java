@@ -6,5 +6,5 @@ public interface PersistentEnum {
  public String getValue();
  public String getName();
  public String getDisplayName();
- public Map<?,?> getAll();
+ public Map<String,String> getAll();
 }

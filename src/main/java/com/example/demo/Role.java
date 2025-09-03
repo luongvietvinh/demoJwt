@@ -16,25 +16,21 @@ public enum Role implements PersistentEnum {
 
   @Override
   public String getValue() {
-    // TODO Auto-generated method stub
     return value;
   }
 
   @Override
   public String getName() {
-    // TODO Auto-generated method stub
     return name();
   }
 
   @Override
   public String getDisplayName() {
-    // TODO Auto-generated method stub
     return displayName;
   }
 
   @Override
   public Map<String, String> getAll() {
-    // TODO Auto-generated method stub
       return Arrays.stream(values())
         .collect(Collectors.toMap(Role::getValue, Role::getDisplayName));
   }

@@ -2,7 +2,6 @@ package com.example.demo.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -12,30 +11,35 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean; // Thêm import này
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import com.example.demo.dto.AuthRequest;
+import org.springframework.test.context.ActiveProfiles;
+import com.amazonaws.services.s3.AmazonS3; // Thêm import này
 import com.example.demo.dto.AuthResponse;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.entity.Users;
+import com.example.demo.dto.request.AuthRequest;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.security.JwtTokenUtil;
 import com.example.demo.service.UserService;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class AuthControllerTests {
+  
     private AuthenticationManager authManager;
     private JwtTokenUtil jwt;
     private UserService userService;
     private CustomUserDetailsService userDetailsService;
     private AuthController controller;
+    
+    @MockBean
+    private AmazonS3 amazonS3;
 
     @BeforeEach
     public void setup() {
@@ -43,38 +47,9 @@ public class AuthControllerTests {
         jwt = mock(JwtTokenUtil.class);
         userService = mock(UserService.class);
         userDetailsService = mock(CustomUserDetailsService.class);
-        controller = new AuthController(authManager, jwt, userService, userDetailsService);
+        controller = new AuthController(authManager, jwt, userDetailsService);
     }
 
-    // ✅ Test cho phương thức register
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testRegisterSuccess() {
-       Set<String> roles = Set.of("1", "2");
-        RegisterRequest req = new RegisterRequest("user", "pass", roles);
-        Users mockUser = new Users(); // giả định có class Users
-        when(userService.register(req)).thenReturn(mockUser);
-
-        ResponseEntity<?> response = controller.register(req);
-
-        assertEquals(200, response.getStatusCodeValue());
-        assertTrue(response.getBody().toString().contains("Đăng ký thành công"));
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testRegisterFail() {
-        Set<String> roles = Set.of("1", "2");
-        RegisterRequest req = new RegisterRequest("user", "pass", roles);
-        when(userService.register(req)).thenThrow(new IllegalArgumentException("Tài khoản đã tồn tại"));
-
-        ResponseEntity<?> response = controller.register(req);
-
-        assertEquals(400, response.getStatusCodeValue());
-        assertEquals("Tài khoản đã tồn tại", response.getBody());
-    }
-
-    // ✅ Test cho phương thức login
     @SuppressWarnings("deprecation")
     @Test
     public void testLoginSuccess() {
@@ -107,5 +82,4 @@ public class AuthControllerTests {
         assertEquals("user", auth.getUser().getUsername());
         assertEquals(Set.of("ROLE_USER"), auth.getUser().getRoles());
     }
-
 }

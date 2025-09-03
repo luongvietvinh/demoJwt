@@ -24,4 +24,6 @@ public interface UserMapper {
     Optional<Users> findByUserName(String userName);
     
     boolean existsByUserName(String userName);
+    
+    void deleteRoleByUserId(String userId);
 }

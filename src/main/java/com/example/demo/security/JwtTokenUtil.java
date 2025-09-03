@@ -15,7 +15,7 @@ public class JwtTokenUtil {
 
     // ⚠️ Đưa các giá trị này vào application.properties ở thực tế
     private final String SECRET = "change_this_super_long_secret_key_for_jwt_256_bits_here_1234567890";
-    private final long ACCESS_EXP_MS  = 15 * 60 * 1000L;   // 15 phút
+    private final long ACCESS_EXP_MS  = 1000 * 60 * 60 * 24;   // 24h
     private final long REFRESH_EXP_MS = 7L * 24 * 60 * 60 * 1000L; // 7 ngày
 
     private Key key() { return Keys.hmacShaKeyFor(SECRET.getBytes()); }
