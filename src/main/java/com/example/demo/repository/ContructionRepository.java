@@ -18,7 +18,7 @@ public interface ContructionRepository {
 
   void deleteContruction(String contructionId);
 
-  void updateContruction(ContructionDto dto);
+  int updateContruction(ContructionDto dto);
   
   boolean existsByContructionId(String contructionId);
 }

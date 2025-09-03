@@ -18,4 +18,10 @@ public interface FileRepository {
     int deleteFile(String uuId);
     
     int deleteFilesByConstructionId(String constructionId);
+    
+    //thêm mới
+
+    List<FileDto> getFilesByContructionId(String contructionId);
+
+    int deleteFilesByUuids(List<String> deleteUuids);
 }

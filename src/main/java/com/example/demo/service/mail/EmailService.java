@@ -23,7 +23,7 @@ public class EmailService {
 
     // Annotation @Async để chạy tác vụ này trên một luồng riêng
     @Async
-    public void sendEmail(String toEmail, String subject,  String templateName, Map<String, Object> variables) {
+    public void sendEmail(String toEmail, String subject,  String template, Map<String, Object> variables) {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
@@ -35,7 +35,7 @@ public class EmailService {
             }
 
             // Render template
-            String htmlContent = templateEngine.process(templateName, context);
+            String htmlContent = templateEngine.process(template, context);
 
             helper.setText(htmlContent, true); // true = HTML
             helper.setTo(toEmail);

@@ -10,5 +10,5 @@ public interface IcontructionService {
   Optional<ContructionDto> getContructionById(String contructionId);
   List<ContructionDto> getListContruction(int page, int size);
   void deleteContruction(String contructionId);
-  ContructionDto updateContruction(ContructionDto dto);
+  ContructionDto updateContruction(ContructionDto dto) throws Exception;
 }

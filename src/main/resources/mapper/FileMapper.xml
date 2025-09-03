@@ -23,7 +23,8 @@
             #{fileName}, 
             #{fileSize}, 
             #{filePath}, 
-            #{createTime}
+            #{createTime},
+            CURRENT_TIMESTAMP
         )
     </insert>
 
@@ -37,7 +38,8 @@
             file_name, 
             file_size, 
             file_path, 
-            create_time
+            create_time,
+            update_time
         ) VALUES
         <foreach collection="files" item="file" separator=",">
             (
@@ -49,24 +51,25 @@
                 #{file.fileSize}, 
                 #{file.filePath}, 
                 #{file.createTime}
+                
             )
         </foreach>
     </insert>
 
     <!-- Get files by construction ID -->
-    <select id="getFilesByConstructionId" parameterType="String" 
+    <select id="getFilesByContructionId" parameterType="String" 
             resultType="com.example.demo.dto.FileDto">
         SELECT 
             uuid as uuId,
             user_id as userId,
             user_name as userName,
-            construction_id as constructionId,
+            contruction_id as contructionId,
             file_name as fileName,
             file_size as fileSize,
             file_path as filePath,
             create_time as createTime
         FROM files 
-        WHERE construction_id = #{constructionId}
+        WHERE contruction_id = #{contructionId}
         ORDER BY create_time DESC
     </select>
 
@@ -74,6 +77,14 @@
      <delete id="deleteFile" parameterType="String">
         DELETE FROM files WHERE uuid = CAST(#{uuId} AS UUID)
     </delete>
+    
+    <delete id="deleteFilesByUuids" parameterType="list">
+    DELETE FROM files
+    WHERE uuid IN
+    <foreach collection="list" item="uuid" open="(" separator="," close=")">
+        #{uuid}
+    </foreach>
+</delete>
 
     <!-- Delete files by construction ID -->
     <delete id="deleteFilesByConstructionId" parameterType="String">

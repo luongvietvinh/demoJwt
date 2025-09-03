@@ -17,15 +17,15 @@
 	</resultMap>
 
     <insert id="insert" parameterType="com.example.demo.entity.Users" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO users (user_id, user_name,pass_word,mail, create_time, create_user)
+        INSERT INTO users (user_id, user_name,pass_word,mail, created_at, create_user)
         VALUES (#{userId}, #{userName}, #{passWord}, #{mail}, CURRENT_TIMESTAMP, #{userName})
     </insert>
     
     <insert id="insertRole" parameterType="java.util.List">
-        INSERT INTO user_role (user_id, role_code, create_time, is_active)
+        INSERT INTO user_role (user_id, user_name, role_code, create_time, is_active)
     VALUES
     <foreach collection="list" item="role" separator=",">
-        (#{role.userId}, #{role.roleCode}, CURRENT_TIMESTAMP, #{role.isActive})
+        (#{role.userId}, #{role.userName}, #{role.roleCode}, CURRENT_TIMESTAMP, #{role.isActive})
     </foreach>
     </insert>
 
@@ -79,7 +79,7 @@
 		 r.role_code
 		 FROM users AS u
 		 JOIN user_role AS r ON u.user_id = r.user_id
-		 WHERE user_name = #{userName}
+		 WHERE u.user_name = #{userName}
     </select>
     
     <select id="existsByUserName" parameterType="string" resultType="boolean">
