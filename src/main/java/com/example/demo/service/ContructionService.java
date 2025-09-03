@@ -5,15 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.ContructionDto;
+import com.example.demo.dto.FileDiffResult;
 import com.example.demo.dto.FileDto;
 import com.example.demo.repository.ContructionRepository;
 import com.example.demo.repository.FileRepository;
+import com.example.demo.service.impl.FileSyncCommonService;
 import com.example.demo.service.impl.S3FileService;
 import com.example.demo.service.mail.EmailService;
 
@@ -30,44 +34,45 @@ public class ContructionService implements IcontructionService {
   private ContructionRepository repository;
   @Autowired
   private FileRepository fileRepository;
+  @Autowired
+  private FileSyncCommonService fileSyncService;
 
   @Transactional
   public ContructionDto createContruction(ContructionDto dto) {
-    List<FileDto> uploadedFiles = Collections.emptyList();
+      List<FileDto> uploadedFiles = Collections.emptyList();
+      try {
+          if (checkExistsContruction(dto.getContructionId())) {
+              throw new IllegalArgumentException("Công trình đã tồn tại với ID: " + dto.getContructionId());
+          }
 
-    try {
-      // Upload files
-      if (dto.getUploadFiles() != null && !dto.getUploadFiles().isEmpty()) {
-        uploadedFiles =
-            s3FileService.uploadFiles(dto.getUploadFiles(), dto.getUserID(), dto.getUserName());
-        dto.setFiles(uploadedFiles);
+          if (dto.getUploadFiles() != null && !dto.getUploadFiles().isEmpty()) {
+              uploadedFiles = s3FileService.uploadFiles(dto.getUploadFiles(), dto.getUserID(), dto.getUserName(), dto.getContructionId());
+              dto.setFiles(uploadedFiles);
+          }
+
+          int count = repository.createContruction(dto);
+          if (count <= 0) throw new IllegalArgumentException("Insert construction thất bại");
+
+          if (!uploadedFiles.isEmpty()) {
+              int fileCount = fileRepository.insertListFile(uploadedFiles, dto.getContructionId());
+              if (fileCount <= 0) throw new IllegalArgumentException("Insert files thất bại");
+          }
+
+          sendRegistrationEmail(dto);
+          return repository.getContructionById(dto.getContructionId());
+
+      } catch (Exception e) {
+          s3FileService.deleteFiles(uploadedFiles); // rollback
+          throw e;
       }
-      logger.info("ContructionId ở DTO trước khi insert: " + dto.getContructionId());
-
-      // Insert construction
-      int count = repository.createContruction(dto);
-      if (count <= 0)
-        throw new IllegalArgumentException("Insert construction thất bại");
-
-      // Insert files
-      if (!uploadedFiles.isEmpty()) {
-        int fileCount = fileRepository.insertListFile(uploadedFiles, dto.getContructionId());
-        if (fileCount <= 0)
-          throw new IllegalArgumentException("Insert files thất bại");
-      }
-
-      ContructionDto construction = repository.getContructionById(dto.getContructionId());
-
-      // Gửi mail
-      sendRegistrationEmail(dto);
-
-      return construction;
-
-    } catch (Exception e) {
-      // Rollback files S3 nếu có lỗi
-      cleanupUploadedFiles(uploadedFiles);
-      throw e;
-    }
+  }
+  
+  /*/ 
+   * check exit contruction
+   */
+  private boolean checkExistsContruction(String contructionId) {
+    boolean existsByContructionId = repository.existsByContructionId(contructionId);
+    return existsByContructionId;
   }
 
   private void sendRegistrationEmail(ContructionDto dto) {
@@ -89,19 +94,6 @@ public class ContructionService implements IcontructionService {
     }
   }
 
-  private void cleanupUploadedFiles(List<FileDto> files) {
-    if (files == null || files.isEmpty())
-      return;
-    files.forEach(file -> {
-      try {
-        s3FileService.deleteFile(file.getFilePath());
-      } catch (Exception ex) {
-        logger.warn("Không thể xóa file S3 {} sau rollback", file.getFilePath(), ex);
-      }
-    });
-  }
-
-
 
   @Override
   public Optional<ContructionDto> getContructionById(String contructionId) {
@@ -111,18 +103,75 @@ public class ContructionService implements IcontructionService {
 
   @Override
   public List<ContructionDto> getListContruction(int page, int size) {
-    // TODO Auto-generated method stub
-    return null;
+    if (page == 0) {
+      page++;
+    }
+    int offset = (page - 1) * size;
+    List<ContructionDto> contructions = repository.getLisstContruction(size, offset);
+
+    return contructions;
   }
 
   @Override
+  @Transactional
   public void deleteContruction(String contructionId) {
-    // TODO Auto-generated method stub
+    logger.info("Request to delete construction with id={}", contructionId);
+
+    ContructionDto construction = repository.getContructionById(contructionId);
+    if (construction == null) {
+      logger.warn("Construction with id={} not found", contructionId);
+        throw new IllegalArgumentException("Construction not found with id: " + contructionId);
+    }
+
+    // Xóa construction
+    repository.deleteContruction(contructionId);
+    logger.info("Deleted construction record with id={}", contructionId);
+
+    // Xử lý file nếu có
+    if (construction.getFiles() != null && !construction.getFiles().isEmpty()) {
+            // Xóa trên S3
+            s3FileService.deleteFiles(construction.getFiles());
+            logger.info("Deleted {} files from S3 for construction id={}", construction.getFiles().size(), contructionId);
+
+            // Xóa trong DB
+            List<String> uuids = construction.getFiles().stream()
+                                        .map(FileDto::getUuId)
+                                        .toList();
+            fileRepository.deleteFilesByUuids(uuids);
+            logger.info("Deleted {} files from DB for construction id={}", uuids.size(), contructionId);
+    }
 
   }
 
+  @Transactional
   public ContructionDto updateContruction(ContructionDto dto) {
-    // TODO Auto-generated method stub
-    return null;
+      FileDiffResult diff = new FileDiffResult(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+      try {
+          if (!checkExistsContruction(dto.getContructionId())) {
+              throw new IllegalArgumentException("Công trình không tồn tại: " + dto.getContructionId());
+          }
+
+          diff = fileSyncService.syncFiles(dto);
+
+          int updated = repository.updateContruction(dto);
+          if (updated <= 0) throw new IllegalArgumentException("Update construction thất bại");
+
+          if (!diff.getToInsert().isEmpty()) {
+              fileRepository.insertListFile(diff.getToInsert(), dto.getContructionId());
+          }
+
+          if (!diff.getToDelete().isEmpty()) {
+              s3FileService.deleteFiles(diff.getToDelete());
+              List<String> uuids = diff.getToDelete().stream().map(FileDto::getUuId).toList();
+              fileRepository.deleteFilesByUuids(uuids);
+          }
+
+          return repository.getContructionById(dto.getContructionId());
+
+      } catch (Exception e) {
+          s3FileService.deleteFiles(diff.getUploadedNow()); // rollback file mới
+          throw e;
+      }
   }
+
 }

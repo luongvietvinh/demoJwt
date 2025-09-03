@@ -34,3 +34,5 @@ build/
 
 # PostgreSQL runtime data
 /demoJwt-clean/postgres_data/
+
+.env

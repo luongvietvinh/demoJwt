@@ -25,7 +25,7 @@ public class UserController {
         this.userService = userService;
     }
     @PostMapping("/create")
-    @PreAuthorize("hasRole('USER')")
+//    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createUser(@RequestBody @Valid RequestDto request) {
         try {
             logger.info("LOGGIN =>> convert request to entity -> " + request);

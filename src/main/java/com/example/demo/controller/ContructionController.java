@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.ContructionDto;
 import com.example.demo.dto.request.ContructionReigisterRequest;
+import com.example.demo.dto.request.ContructionUpdateRequest;
 import com.example.demo.dto.request.UpdateUserRequest;
 import com.example.demo.entity.Users;
 import com.example.demo.security.CustomUserDetails;
@@ -43,40 +46,23 @@ public class ContructionController {
     this.contructionService = contructionService;
   }
 
-  @PostMapping("/create")
-  @PreAuthorize("hasRole('USER')")
-  public ResponseEntity<Object> createContruction(
-      @RequestBody @Valid ContructionReigisterRequest request) {
-    CustomUserDetails userDetails = CommonUtils.getUserLogin();
-    String contructionId = RandomStringUtils.randomAlphabetic(8);
-    String userId = userDetails.getUserId();
-    String username = userDetails.getUsername();
-    ContructionDto dto = ContructionDto.fromRequest(request, contructionId, userId, username);
-
-    ContructionDto contruction = contructionService.createContruction(dto);
-
-    // Trả về contruction vừa tạo
-    return ResponseEntity.ok(contruction);
-  }
-
   @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<Object> createContruction(
-      @RequestPart("request") @Valid ContructionReigisterRequest request,
-      @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+      @ModelAttribute @Valid ContructionReigisterRequest request) {
 
     try {
       logger.info("LOGGING =>> Creating construction with files count: {}",
-          files != null ? files.size() : 0);
+          request.getUploadFiles() != null ? request.getUploadFiles().size() : 0);
 
       CustomUserDetails userDetails = CommonUtils.getUserLogin();
       request.setUserID(userDetails.getUserId());
       request.setUserName(userDetails.getUsername());
 
-      // Set files vào request
-      if (files != null && !files.isEmpty()) {
-        request.setUploadFiles(files);
-      }
+//      // Set files vào request
+//      if (request.getFiles() != null && !request.getFiles().isEmpty()) {
+//        request.setUploadFiles(request.getFiles());
+//      }
 
       String contructionId = RandomStringUtils.randomAlphabetic(8);
       String userId = userDetails.getUserId();
@@ -111,15 +97,20 @@ public class ContructionController {
   }
 
   @PutMapping("/update")
-  public ResponseEntity<ContructionDto> updateUser(
-      @RequestBody @Valid ContructionReigisterRequest request) {
-    logger.info("LOGGIN Start UPDATE=>> convert request to entity ->" + request);
-    CustomUserDetails userDetails = CommonUtils.getUserLogin();
-    String contructionId = RandomStringUtils.randomAlphabetic(8);
-    String userId = userDetails.getUserId();
-    String username = userDetails.getUsername();
-    ContructionDto dto = ContructionDto.fromRequest(request, contructionId, userId, username);
-    return ResponseEntity.ok(contructionService.updateContruction(dto));
+  public ResponseEntity<ContructionDto> updateContruction(
+                    @ModelAttribute @Valid ContructionUpdateRequest request) throws Exception {
+      
+      logger.info("LOGGING Start UPDATE => convert request to entity -> " + request);
+
+      // Lấy user login
+      CustomUserDetails userDetails = CommonUtils.getUserLogin();
+      String userId = userDetails.getUserId();
+      String username = userDetails.getUsername();
+      // contructionId lấy từ path, KHÔNG random mới
+      ContructionDto dto = ContructionDto.fromRequest(request, userId, username);
+
+      ContructionDto updated = contructionService.updateContruction(dto);
+      return ResponseEntity.ok(updated);
   }
 
   @DeleteMapping("/{contructionId}")

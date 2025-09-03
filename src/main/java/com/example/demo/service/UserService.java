@@ -60,6 +60,7 @@ public class UserService implements IuserService {
     List<RoleEntity> roleEntities = request.getRoles().stream()
         .map(role -> RoleEntity.builder()
             .userId(user.getUserId())
+            .userName(user.getUserName())
             .roleCode(role)
             .isActive(true)
             .build())
@@ -76,7 +77,7 @@ public class UserService implements IuserService {
       variables.put("passWord", request.getPassWord());
       variables.put("subject", subject);
       
-      String template = "MailTeamplate";
+      String template = "MailTemplate";
       
       emailService.sendEmail(user.getMail(), subject,
           template,variables );
@@ -108,8 +109,9 @@ public class UserService implements IuserService {
   }
 
   @Override
-  public void deleteUser(String id) {
-    repository.delete(id);
+  public void deleteUser(String userId) {
+    repository.delete(userId);
+    repository.deleteRoleByUserId(userId);
   }
 
   @Override

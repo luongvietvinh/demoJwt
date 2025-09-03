@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,19 +19,37 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<List<String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-      // Lấy toàn bộ lỗi của các field
+  public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
       List<String> errors = ex.getBindingResult()
                               .getFieldErrors()
                               .stream()
-                              .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                              .map(err -> err.getField() + ": " + err.getDefaultMessage())
                               .collect(Collectors.toList());
-      return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-  };
+
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("timestamp", LocalDateTime.now());
+      errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
+      errorResponse.put("error", "Validation Failed");
+      errorResponse.put("message", errors);
+      errorResponse.put("path", request.getRequestURI());
+
+      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+  }
   
   @ExceptionHandler(ValidationException.class)
   public ResponseEntity<Object> handleValidationExceptions(ValidationException ex) {
       return new ResponseEntity<>(ex.getErrors(), HttpStatus.BAD_REQUEST);
+  }
+  
+  @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+  public ResponseEntity<Map<String, Object>> handleUnsupportedMediaType(HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("timestamp", LocalDateTime.now());
+      errorResponse.put("status", HttpStatus.UNSUPPORTED_MEDIA_TYPE.value()); // 415
+      errorResponse.put("error", "Unsupported Media Type");
+      errorResponse.put("message", ex.getMessage());
+      errorResponse.put("path", request.getRequestURI());
+      return new ResponseEntity<>(errorResponse, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
   }
   
 //Bắt lỗi IllegalArgumentException
@@ -61,11 +80,11 @@ public class GlobalExceptionHandler {
   public ResponseEntity<Map<String, Object>> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
       Map<String, Object> errorResponse = new HashMap<>();
       errorResponse.put("timestamp", LocalDateTime.now());
-      errorResponse.put("status", HttpStatus.SERVICE_UNAVAILABLE.value()); // 503
-      errorResponse.put("error", "Service Unavailable");
+      errorResponse.put("status", HttpStatus.FORBIDDEN.value()); // 403
+      errorResponse.put("error", "Forbidden");
       errorResponse.put("message", "Bạn không có quyền truy cập vào chức năng này");
       errorResponse.put("path", request.getRequestURI());
 
-      return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
+      return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
   }
 }

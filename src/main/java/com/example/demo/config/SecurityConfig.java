@@ -42,6 +42,7 @@ public class SecurityConfig {
           .authorizeHttpRequests(auth -> auth
               .requestMatchers("/auth/**").permitAll()
               .requestMatchers(HttpMethod.GET, "/public/**").permitAll()
+              .requestMatchers("/api/users/create").permitAll() // Thêm rule này
               .requestMatchers("/admin/**").hasRole("ADMIN")
               .requestMatchers("/user/**").hasAnyRole("USER","ADMIN","SUPPORT")
               .anyRequest().authenticated()
