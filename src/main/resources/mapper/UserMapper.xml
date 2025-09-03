@@ -45,10 +45,19 @@
 			u.mail,
 			u.is_enabled,
 			r.role_code
-		FROM users AS u
-		JOIN user_role AS r ON u.user_id = r.user_id
-		ORDER BY user_id
-		LIMIT #{limit} OFFSET #{offset}
+		FROM (
+		    SELECT 
+				user_id,
+				user_name,
+				pass_word,
+				mail,
+				is_enabled
+		    FROM users
+		    ORDER BY user_id
+		    LIMIT #{limit} OFFSET #{offset}
+		) u
+		JOIN user_role r ON u.user_id = r.user_id
+		ORDER BY u.user_id;
 	</select>
 
 	<select id="findByName" parameterType="string"
