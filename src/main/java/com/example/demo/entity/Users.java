@@ -7,6 +7,7 @@ import com.example.demo.Role;
 import com.example.demo.dto.request.UpdateUserRequest;
 import com.example.demo.utils.CustomTimestampDeserializer;
 import com.example.demo.utils.DateTimeUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,6 +30,7 @@ public class Users {
     @JsonDeserialize(using = CustomTimestampDeserializer.class)
     private Timestamp updateAt;
 
+    @JsonIgnore
     public Set<Role> getEnumRoles() {
       return roles.stream()
           .map(Role::fromValue)

@@ -41,6 +41,18 @@ public class GlobalExceptionHandler {
       return new ResponseEntity<>(ex.getErrors(), HttpStatus.BAD_REQUEST);
   }
   
+  @ExceptionHandler(NotFoundException.class)
+  public ResponseEntity<Map<String, Object>> handleUserNotFound(NotFoundException ex, HttpServletRequest request) {
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("timestamp", LocalDateTime.now());
+      errorResponse.put("status", HttpStatus.NOT_FOUND.value());
+      errorResponse.put("error", "Not Found");
+      errorResponse.put("message", ex.getMessage());
+      errorResponse.put("path", request.getRequestURI());
+
+      return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+  }
+  
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
   public ResponseEntity<Map<String, Object>> handleUnsupportedMediaType(HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
       Map<String, Object> errorResponse = new HashMap<>();

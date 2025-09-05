@@ -15,7 +15,7 @@ public interface UserMapper {
 
     List<Users> findAll(@Param("limit") int limit, @Param("offset") int offset);
 
-    Optional<Users> findByName(String userName);
+    Users findByName(String userName);
     Optional<Users> findByUserId(String userId);
 
     void delete(String userId);

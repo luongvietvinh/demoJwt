@@ -11,16 +11,20 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.ContructionDto;
 import com.example.demo.dto.FileDiffResult;
 import com.example.demo.dto.FileDto;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.ContructionRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.service.impl.FileSyncCommonService;
 import com.example.demo.service.impl.S3FileService;
 import com.example.demo.service.mail.EmailService;
+import com.example.demo.utils.MessageUtils;
 
 @Service
 public class ContructionService implements IcontructionService {
@@ -39,6 +43,7 @@ public class ContructionService implements IcontructionService {
   private FileSyncCommonService fileSyncService;
 
   @Transactional
+  @CacheEvict(value = "constructionList", allEntries = true)
   public ContructionDto createContruction(ContructionDto dto) {
       List<FileDto> uploadedFiles = Collections.emptyList();
       try {
@@ -99,10 +104,14 @@ public class ContructionService implements IcontructionService {
   @Override
   public Optional<ContructionDto> getContructionById(String contructionId) {
     ContructionDto construction = repository.getContructionById(contructionId);
+    if(construction == null) {
+      throw new NotFoundException(MessageUtils.contructionNotFound);
+    }
     return Optional.of(construction);
   }
 
   @Override
+  @Cacheable(value = "constructionList", key = "#page + '-' + #size")
   public List<ContructionDto> getListContruction(int page, int size) {
     if (page == 0) {
       page++;
@@ -115,13 +124,14 @@ public class ContructionService implements IcontructionService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "constructionList", allEntries = true)
   public void deleteContruction(String contructionId) {
     logger.info("Request to delete construction with id={}", contructionId);
 
     ContructionDto construction = repository.getContructionById(contructionId);
     if (construction == null) {
       logger.warn("Construction with id={} not found", contructionId);
-        throw new IllegalArgumentException("Construction not found with id: " + contructionId);
+        throw new NotFoundException(MessageUtils.contructionNotFound);
     }
 
     // Xóa construction
@@ -145,17 +155,18 @@ public class ContructionService implements IcontructionService {
   }
 
   @Transactional
+  @CacheEvict(value = "constructionList", allEntries = true)
   public ContructionDto updateContruction(ContructionDto dto) {
       FileDiffResult diff = new FileDiffResult(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
       try {
           if (!checkExistsContruction(dto.getContructionId())) {
-              throw new IllegalArgumentException("Công trình không tồn tại: " + dto.getContructionId());
+              throw new NotFoundException(MessageUtils.contructionNotFound);
           }
 
           diff = fileSyncService.syncFiles(dto);
 
           int updated = repository.updateContruction(dto);
-          if (updated <= 0) throw new IllegalArgumentException("Update construction thất bại");
+          if (updated <= 0) throw new NotFoundException(MessageUtils.updateFail);
 
           if (!diff.getToInsert().isEmpty()) {
               fileRepository.insertListFile(diff.getToInsert(), dto.getContructionId());
@@ -179,7 +190,6 @@ public class ContructionService implements IcontructionService {
   public int deleteOldData() {
       LocalDateTime threshold = LocalDateTime.now().minusDays(1);
       int deletedCount = repository.deleteOlderThan(threshold);
-      System.out.println("Deleted " + deletedCount + " old records");
       return deletedCount;
   }
 

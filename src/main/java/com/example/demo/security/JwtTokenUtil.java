@@ -1,13 +1,19 @@
 package com.example.demo.security;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Component;
-import com.example.demo.Role;
-import com.example.demo.entity.RoleEntity;
 import java.security.Key;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 // Quản lý tạo/đọc/validate Access & Refresh tokens
 @Component
@@ -26,8 +32,8 @@ public class JwtTokenUtil {
         Date exp = new Date(now.getTime() + ACCESS_EXP_MS);
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put("uid", userId);
-        claims.put("uname", username);
+        claims.put("userId", userId);
+        claims.put("username", username);
         claims.put("roles", roles == null? List.of() : roles.stream().collect(Collectors.toList()));
         return Jwts.builder()
                 .setSubject(username)
