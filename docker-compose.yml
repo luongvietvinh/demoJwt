@@ -13,19 +13,30 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
-  spring-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: spring-app-demo
+      
+  redis:
+    image: redis:7
+    container_name: redis
     restart: always
     ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      - postgres
+      - "6379:6379"
+
+#  spring-app:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    container_name: spring-app-demo
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    env_file:
+#      - .env
+#    depends_on:
+#      - postgres
+#      - redis
+#    networks:
+#      - app-network
 
 volumes:
-  pgdata:  
+  pgdata:
+

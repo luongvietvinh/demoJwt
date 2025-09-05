@@ -58,20 +58,17 @@ public class UserController {
     @GetMapping("/{userName}")
     public ResponseEntity<Users> getUserByName(@PathVariable String userName) {
       logger.info("LOGGIN =>> start get detail user ->" + userName);
-        return userService.getUserByName(userName)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+      Users user = userService.getUserByName(userName);
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/update")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Users> updateUser(@RequestBody @Valid UpdateUserRequest request) {
       logger.info("LOGGIN Start UPDATE=>> convert request to entity ->" + request);
-      Users user = Users.builder()
-          .userId(request.getUserId())
-          .userName(request.getUserName())
-          .passWord(request.getPassWord())
-          .mail(request.getMail()).build();
+      
+      Users user = Users.convertRequestToEntity(request);
+      
         return ResponseEntity.ok(userService.updateUser(user));
     }
 

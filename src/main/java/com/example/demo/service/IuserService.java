@@ -12,7 +12,7 @@ public interface IuserService {
     
     List<Users> getAllUsers(int page, int size);
     
-    Optional<Users> getUserByName(String name);
+    Users getUserByName(String name);
     
     void deleteUser(String id);
     

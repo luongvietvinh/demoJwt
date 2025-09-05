@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,9 +33,14 @@ import com.example.demo.dto.request.UpdateUserRequest;
 import com.example.demo.entity.Users;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.ContructionService;
+import com.example.demo.service.impl.ExportContructionService;
+import com.example.demo.service.impl.ImportContructionService;
 import com.example.demo.utils.CommonUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/contruction")
 public class ContructionController {
@@ -41,10 +48,9 @@ public class ContructionController {
   private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
   private final ContructionService contructionService;
+  private final ExportContructionService exportService;
+  private final ImportContructionService importService;
 
-  public ContructionController(ContructionService contructionService) {
-    this.contructionService = contructionService;
-  }
 
   @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('USER')")
@@ -58,11 +64,6 @@ public class ContructionController {
       CustomUserDetails userDetails = CommonUtils.getUserLogin();
       request.setUserID(userDetails.getUserId());
       request.setUserName(userDetails.getUsername());
-
-//      // Set files vào request
-//      if (request.getFiles() != null && !request.getFiles().isEmpty()) {
-//        request.setUploadFiles(request.getFiles());
-//      }
 
       String contructionId = RandomStringUtils.randomAlphabetic(8);
       String userId = userDetails.getUserId();
@@ -98,7 +99,7 @@ public class ContructionController {
 
   @PutMapping("/update")
   public ResponseEntity<ContructionDto> updateContruction(
-                    @ModelAttribute @Valid ContructionUpdateRequest request) throws Exception {
+                    @ModelAttribute @Valid ContructionUpdateRequest request) {
       
       logger.info("LOGGING Start UPDATE => convert request to entity -> " + request);
 
@@ -118,4 +119,40 @@ public class ContructionController {
     contructionService.deleteContruction(contructionId);
     return ResponseEntity.noContent().build();
   }
+  
+  // ===== EXPORT =====
+  @GetMapping("/export/csv")
+  public void exportCsv(HttpServletResponse response) throws IOException {
+      exportService.exportCsv(response);
+  }
+
+  @GetMapping("/export/excel")
+  public void exportExcel(HttpServletResponse response) throws IOException {
+      exportService.exportExcel(response);
+  }
+
+  // ===== IMPORT =====
+  @PostMapping("/import/csv")
+  public ResponseEntity<String> importCsv(@RequestParam("file") MultipartFile file) {
+      try {
+          importService.importCsv(file);
+          return ResponseEntity.ok("Import CSV thành công!");
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                               .body("Import CSV thất bại: " + e.getMessage());
+      }
+  }
+
+  @PostMapping("/import/excel")
+  public ResponseEntity<String> importExcel(@RequestParam("file") MultipartFile file) {
+      try {
+          importService.importExcel(file);
+          return ResponseEntity.ok("Import Excel thành công!");
+      } catch (Exception e) {
+          return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                               .body("Import Excel thất bại: " + e.getMessage());
+      }
+  }
+  
+  
 }

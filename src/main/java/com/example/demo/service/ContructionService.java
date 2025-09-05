@@ -1,43 +1,43 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.ContructionDto;
 import com.example.demo.dto.FileDiffResult;
 import com.example.demo.dto.FileDto;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.ContructionRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.service.impl.FileSyncCommonService;
 import com.example.demo.service.impl.S3FileService;
 import com.example.demo.service.mail.EmailService;
+import com.example.demo.utils.MessageUtils;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ContructionService implements IcontructionService {
 
   private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-  @Autowired
   private EmailService emailService;
-  @Autowired
   private S3FileService s3FileService;
-  @Autowired
   private ContructionRepository repository;
-  @Autowired
   private FileRepository fileRepository;
-  @Autowired
   private FileSyncCommonService fileSyncService;
 
   @Transactional
+  @CacheEvict(value = "constructionList", allEntries = true)
   public ContructionDto createContruction(ContructionDto dto) {
       List<FileDto> uploadedFiles = Collections.emptyList();
       try {
@@ -98,10 +98,14 @@ public class ContructionService implements IcontructionService {
   @Override
   public Optional<ContructionDto> getContructionById(String contructionId) {
     ContructionDto construction = repository.getContructionById(contructionId);
+    if(construction == null) {
+      throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
+    }
     return Optional.of(construction);
   }
 
   @Override
+  @Cacheable(value = "constructionList", key = "#page + '-' + #size")
   public List<ContructionDto> getListContruction(int page, int size) {
     if (page == 0) {
       page++;
@@ -114,13 +118,14 @@ public class ContructionService implements IcontructionService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "constructionList", allEntries = true)
   public void deleteContruction(String contructionId) {
     logger.info("Request to delete construction with id={}", contructionId);
 
     ContructionDto construction = repository.getContructionById(contructionId);
     if (construction == null) {
       logger.warn("Construction with id={} not found", contructionId);
-        throw new IllegalArgumentException("Construction not found with id: " + contructionId);
+        throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
     }
 
     // Xóa construction
@@ -144,17 +149,18 @@ public class ContructionService implements IcontructionService {
   }
 
   @Transactional
+  @CacheEvict(value = "constructionList", allEntries = true)
   public ContructionDto updateContruction(ContructionDto dto) {
       FileDiffResult diff = new FileDiffResult(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
       try {
           if (!checkExistsContruction(dto.getContructionId())) {
-              throw new IllegalArgumentException("Công trình không tồn tại: " + dto.getContructionId());
+              throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
           }
 
           diff = fileSyncService.syncFiles(dto);
 
           int updated = repository.updateContruction(dto);
-          if (updated <= 0) throw new IllegalArgumentException("Update construction thất bại");
+          if (updated <= 0) throw new NotFoundException(MessageUtils.UPDATE_FAIL);
 
           if (!diff.getToInsert().isEmpty()) {
               fileRepository.insertListFile(diff.getToInsert(), dto.getContructionId());
@@ -172,6 +178,12 @@ public class ContructionService implements IcontructionService {
           s3FileService.deleteFiles(diff.getUploadedNow()); // rollback file mới
           throw e;
       }
+  }
+
+  @Transactional
+  public int deleteOldData() {
+      LocalDateTime threshold = LocalDateTime.now().minusDays(1);
+      return repository.deleteOlderThan(threshold);
   }
 
 }

@@ -1,25 +1,23 @@
 package com.example.demo.service;
 
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.demo.dto.request.RegisterRequest;
 import com.example.demo.entity.RoleEntity;
 import com.example.demo.entity.Users;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.UserMapper;
 import com.example.demo.request.RequestDto;
 import com.example.demo.service.mail.EmailService;
+import com.example.demo.utils.MessageUtils;
 
 @Service
 public class UserService implements IuserService {
@@ -27,24 +25,23 @@ public class UserService implements IuserService {
   private static final String ALPHANUM = "abcdefghijklmnopqrstuvwxyz0123456789";
   private static final SecureRandom RANDOM = new SecureRandom();
   private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-  @Autowired
-  private final UserMapper repository;
 
-  @Autowired
-  private EmailService emailService;
-  @Autowired
+  
+  private final UserMapper repository;
+  private final EmailService emailService;
   private final BCryptPasswordEncoder encoder;
 
-  public UserService(UserMapper repository, BCryptPasswordEncoder encoder) {
+  public UserService(UserMapper repository, EmailService emailService) {
     this.repository = repository;
-    this.encoder = encoder;
+    this.emailService = emailService;
+    this.encoder = new BCryptPasswordEncoder();
   }
 
   @Override
   @Transactional
   public Users saveUser(RequestDto request) {
     if (repository.existsByUserName(request.getUserName())) {
-      throw new IllegalArgumentException("Username đã tồn tại");
+      throw new NotFoundException(MessageUtils.USER_EXITED);
     }
     Users user = Users.builder()
         .userId(generateUserId())
@@ -103,9 +100,13 @@ public class UserService implements IuserService {
     return users;
   }
 
-  public Optional<Users> getUserByName(String userName) {
-    return Optional.ofNullable(repository.findByName(userName))
-        .orElseThrow(() -> new IllegalArgumentException("User không tồn tại"));
+  @Override
+  public Users getUserByName(String userName) {
+    Users user = repository.findByName(userName);
+    if (user == null) {
+        throw new NotFoundException(MessageUtils.USER_NOT_FOUND);
+    }
+    return user;
   }
 
   @Override
@@ -116,43 +117,25 @@ public class UserService implements IuserService {
 
   @Override
   public Users updateUser(Users user) {
-    Optional.ofNullable(repository.findByName(user.getUserName()))
-        .orElseThrow(() -> new IllegalArgumentException("User không tồn tại"));
+    Optional.ofNullable(repository.findByUserId(user.getUserId())
+        .orElseThrow(() -> new NotFoundException(MessageUtils.USER_NOT_FOUND)));
     repository.update(user);
-    logger.info("LOGGIN =>> Update user" + user.getUserName() + " done -> OK");
-    return user;
-  }
-
-
-  @Transactional
-  public Users register(RegisterRequest req) {
-    if (repository.existsByUserName(req.getUserName())) {
-      throw new IllegalArgumentException("Username đã tồn tại");
+    logger.info("=>>> UPDATE user" + user.getUserName() + " done -> OK");
+    // check update /delete role
+    if(user.getRoles()!= null && !user.getRoles().isEmpty()) {
+      repository.deleteRoleByUserId(user.getUserId());
     }
-
-
-    Set<String> roles = (req.getRoles() == null || req.getRoles().isEmpty())
-        ? Collections.emptySet()
-        : req.getRoles();
-
-    // settuser
-    Users user = Users.builder()
-        .userId(generateUserId())
-        .userName(req.getUserName())
-        .passWord(encoder.encode(req.getPassWord()))
-        .mail(null)
-        .isEnabled(true)
-        .roles(roles)
-        .build();
-    List<RoleEntity> roleEntities = req.getRoles().stream()
+    List<RoleEntity> roleEntities = user.getRoles().stream()
         .map(role -> RoleEntity.builder()
             .userId(user.getUserId())
+            .userName(user.getUserName())
             .roleCode(role)
             .isActive(true)
             .build())
         .collect(Collectors.toList());
-    repository.insert(user);
+
     repository.insertRole(roleEntities);
+    logger.info("INSERT ROLE =>> Update user" + user.getUserName() + " done -> OK");
     return user;
   }
 
