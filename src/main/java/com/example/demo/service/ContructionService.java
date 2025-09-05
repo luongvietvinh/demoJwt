@@ -190,8 +190,7 @@ public class ContructionService implements IcontructionService {
   @Transactional
   public int deleteOldData() {
       LocalDateTime threshold = LocalDateTime.now().minusDays(1);
-      int deletedCount = repository.deleteOlderThan(threshold);
-      return deletedCount;
+      return repository.deleteOlderThan(threshold);
   }
 
 }

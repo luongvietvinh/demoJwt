@@ -1,9 +1,8 @@
 package com.example.demo.service.impl;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,11 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.ContructionDto;
-import com.example.demo.entity.ContructionEntity;
 import com.example.demo.repository.ContructionRepository;
 import com.example.demo.service.IimportContructionService;
 import com.example.demo.utils.DateTimeUtils;
-import com.opencsv.CSVParser;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,7 +27,7 @@ public class ImportContructionService implements IimportContructionService {
   private final ContructionRepository contructionRepo;
   
   @Override
-  public void importCsv(MultipartFile file) throws Exception {
+  public void importCsv(MultipartFile file) throws IOException {
 
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
       String line;
@@ -55,7 +52,7 @@ public class ImportContructionService implements IimportContructionService {
   }
 
   @Override
-  public void importExcel(MultipartFile file) throws Exception {
+  public void importExcel(MultipartFile file) throws IOException {
     try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
       Sheet sheet = workbook.getSheetAt(0);
       Iterator<Row> rows = sheet.iterator();

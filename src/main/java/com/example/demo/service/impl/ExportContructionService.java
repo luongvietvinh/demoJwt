@@ -1,6 +1,8 @@
 package com.example.demo.service.impl;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.rmi.server.ExportException;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -23,7 +25,7 @@ public class ExportContructionService implements IexportContructionService {
   
 
   @Override
-  public void exportExcel(HttpServletResponse response) throws Exception {
+  public void exportExcel(HttpServletResponse response) throws IOException {
     response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     response.setHeader("Content-Disposition", "attachment; filename=constructions.xlsx");
 
@@ -58,7 +60,7 @@ public class ExportContructionService implements IexportContructionService {
   }
 
   @Override
-  public void exportCsv(HttpServletResponse response) throws Exception {
+  public void exportCsv(HttpServletResponse response) throws IOException {
     response.setContentType("text/csv; charset=UTF-8");
     response.setHeader("Content-Disposition", "attachment; filename=constructions.csv");
 

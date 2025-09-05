@@ -1,9 +1,13 @@
 package com.example.demo.exception;
 
-import com.example.demo.utils.MessageUtils;
 
 public class NotFoundException extends RuntimeException {
   
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+
   public NotFoundException(String message) {
     super(message);
 }
