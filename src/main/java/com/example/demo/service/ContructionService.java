@@ -6,12 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -26,21 +22,18 @@ import com.example.demo.service.impl.FileSyncCommonService;
 import com.example.demo.service.impl.S3FileService;
 import com.example.demo.service.mail.EmailService;
 import com.example.demo.utils.MessageUtils;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ContructionService implements IcontructionService {
 
   private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-  @Autowired
   private EmailService emailService;
-  @Autowired
   private S3FileService s3FileService;
-  @Autowired
   private ContructionRepository repository;
-  @Autowired
   private FileRepository fileRepository;
-  @Autowired
   private FileSyncCommonService fileSyncService;
 
   @Transactional
@@ -106,7 +99,7 @@ public class ContructionService implements IcontructionService {
   public Optional<ContructionDto> getContructionById(String contructionId) {
     ContructionDto construction = repository.getContructionById(contructionId);
     if(construction == null) {
-      throw new NotFoundException(MessageUtils.contructionNotFound);
+      throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
     }
     return Optional.of(construction);
   }
@@ -132,7 +125,7 @@ public class ContructionService implements IcontructionService {
     ContructionDto construction = repository.getContructionById(contructionId);
     if (construction == null) {
       logger.warn("Construction with id={} not found", contructionId);
-        throw new NotFoundException(MessageUtils.contructionNotFound);
+        throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
     }
 
     // Xóa construction
@@ -161,13 +154,13 @@ public class ContructionService implements IcontructionService {
       FileDiffResult diff = new FileDiffResult(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
       try {
           if (!checkExistsContruction(dto.getContructionId())) {
-              throw new NotFoundException(MessageUtils.contructionNotFound);
+              throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
           }
 
           diff = fileSyncService.syncFiles(dto);
 
           int updated = repository.updateContruction(dto);
-          if (updated <= 0) throw new NotFoundException(MessageUtils.updateFail);
+          if (updated <= 0) throw new NotFoundException(MessageUtils.UPDATE_FAIL);
 
           if (!diff.getToInsert().isEmpty()) {
               fileRepository.insertListFile(diff.getToInsert(), dto.getContructionId());

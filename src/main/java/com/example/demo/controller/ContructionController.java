@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,7 @@ public class ContructionController {
 
   @PutMapping("/update")
   public ResponseEntity<ContructionDto> updateContruction(
-                    @ModelAttribute @Valid ContructionUpdateRequest request) throws Exception {
+                    @ModelAttribute @Valid ContructionUpdateRequest request) {
       
       logger.info("LOGGING Start UPDATE => convert request to entity -> " + request);
 
@@ -121,12 +122,12 @@ public class ContructionController {
   
   // ===== EXPORT =====
   @GetMapping("/export/csv")
-  public void exportCsv(HttpServletResponse response) throws Exception {
+  public void exportCsv(HttpServletResponse response) throws IOException {
       exportService.exportCsv(response);
   }
 
   @GetMapping("/export/excel")
-  public void exportExcel(HttpServletResponse response) throws Exception {
+  public void exportExcel(HttpServletResponse response) throws IOException {
       exportService.exportExcel(response);
   }
 

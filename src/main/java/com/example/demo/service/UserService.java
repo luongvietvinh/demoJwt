@@ -41,7 +41,7 @@ public class UserService implements IuserService {
   @Transactional
   public Users saveUser(RequestDto request) {
     if (repository.existsByUserName(request.getUserName())) {
-      throw new NotFoundException(MessageUtils.userExit);
+      throw new NotFoundException(MessageUtils.USER_EXITED);
     }
     Users user = Users.builder()
         .userId(generateUserId())
@@ -104,7 +104,7 @@ public class UserService implements IuserService {
   public Users getUserByName(String userName) {
     Users user = repository.findByName(userName);
     if (user == null) {
-        throw new NotFoundException(MessageUtils.userNotFound);
+        throw new NotFoundException(MessageUtils.USER_NOT_FOUND);
     }
     return user;
   }
@@ -118,7 +118,7 @@ public class UserService implements IuserService {
   @Override
   public Users updateUser(Users user) {
     Optional.ofNullable(repository.findByUserId(user.getUserId())
-        .orElseThrow(() -> new NotFoundException(MessageUtils.userNotFound)));
+        .orElseThrow(() -> new NotFoundException(MessageUtils.USER_NOT_FOUND)));
     repository.update(user);
     logger.info("=>>> UPDATE user" + user.getUserName() + " done -> OK");
     // check update /delete role

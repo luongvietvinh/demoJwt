@@ -2,13 +2,11 @@ package com.example.demo.service.impl;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.rmi.server.ExportException;
 import java.util.List;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.demo.dto.ContructionDto;
 import com.example.demo.repository.ContructionRepository;
@@ -20,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ExportContructionService implements IexportContructionService {
   
-  @Autowired
   private final ContructionRepository contructionRepo;
   
 
