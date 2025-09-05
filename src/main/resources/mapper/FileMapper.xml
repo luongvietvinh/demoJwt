@@ -83,7 +83,7 @@
     DELETE FROM files
     WHERE uuid IN
     <foreach collection="list" item="uuid" open="(" separator="," close=")">
-        #{uuid}
+        #{uuid}::uuid
     </foreach>
 </delete>
 
