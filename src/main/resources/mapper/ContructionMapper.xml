@@ -169,5 +169,11 @@
         FROM contruction
         WHERE contruction_id = #{contructionId}
     </select>
+    
+    <!-- delete by batch -->
+    <delete id="deleteOldData">
+        DELETE FROM my_data
+        WHERE created_at &lt; #{threshold}
+    </delete>
 
 </mapper>

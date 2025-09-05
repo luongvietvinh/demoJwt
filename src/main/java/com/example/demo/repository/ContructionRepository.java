@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.apache.ibatis.annotations.Mapper;
@@ -21,4 +22,6 @@ public interface ContructionRepository {
   int updateContruction(ContructionDto dto);
   
   boolean existsByContructionId(String contructionId);
+  
+  int deleteOlderThan(@Param("threshold") LocalDateTime threshold);
 }

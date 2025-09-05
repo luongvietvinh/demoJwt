@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -172,6 +173,14 @@ public class ContructionService implements IcontructionService {
           s3FileService.deleteFiles(diff.getUploadedNow()); // rollback file mới
           throw e;
       }
+  }
+
+  @Transactional
+  public int deleteOldData() {
+      LocalDateTime threshold = LocalDateTime.now().minusDays(1);
+      int deletedCount = repository.deleteOlderThan(threshold);
+      System.out.println("Deleted " + deletedCount + " old records");
+      return deletedCount;
   }
 
 }

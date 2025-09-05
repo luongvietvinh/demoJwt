@@ -1,0 +1,86 @@
+package com.example.demo.service.impl;
+
+import java.io.PrintWriter;
+import java.util.List;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.example.demo.dto.ContructionDto;
+import com.example.demo.repository.ContructionRepository;
+import com.example.demo.service.IexportContructionService;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ExportContructionService implements IexportContructionService {
+  
+  @Autowired
+  private final ContructionRepository contructionRepo;
+  
+
+  @Override
+  public void exportExcel(HttpServletResponse response) throws Exception {
+    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    response.setHeader("Content-Disposition", "attachment; filename=constructions.xlsx");
+
+    Workbook workbook = new XSSFWorkbook();
+    Sheet sheet = workbook.createSheet("Constructions");
+
+    // Header
+    Row headerRow = sheet.createRow(0);
+    headerRow.createCell(0).setCellValue("Contruction ID");
+    headerRow.createCell(1).setCellValue("Contruction Name");
+    headerRow.createCell(2).setCellValue("Address");
+    headerRow.createCell(3).setCellValue("Create time");
+
+    int rowIdx = 1;
+    int offset = 0;
+    List<ContructionDto> batch;
+    do {
+        batch = contructionRepo.getLisstContruction(1000, offset);
+        for (ContructionDto c : batch) {
+            Row row = sheet.createRow(rowIdx++);
+            row.createCell(0).setCellValue(c.getContructionId());
+            row.createCell(1).setCellValue(c.getContructionName());
+            row.createCell(2).setCellValue(c.getAddress());
+            row.createCell(3).setCellValue(c.getCreatedAt().toString());
+        }
+        offset += 1000;
+    } while (!batch.isEmpty());
+
+    workbook.write(response.getOutputStream());
+    workbook.close();
+
+  }
+
+  @Override
+  public void exportCsv(HttpServletResponse response) throws Exception {
+    response.setContentType("text/csv; charset=UTF-8");
+    response.setHeader("Content-Disposition", "attachment; filename=constructions.csv");
+
+    PrintWriter writer = response.getWriter();
+    writer.println("Contruction ID,Contruction Name,Address,Create time");
+
+    int offset = 0;
+    List<ContructionDto> batch;
+    do {
+        batch = contructionRepo.getLisstContruction(1000, offset);
+        for (ContructionDto c : batch) {
+            writer.println(String.format("%s,%s,%s,%s",
+                    c.getContructionId(),
+                    c.getContructionName(),
+                    c.getAddress(),
+                    c.getCreatedAt()));
+        }
+        offset += 1000;
+    } while (!batch.isEmpty());
+
+    writer.flush();
+  }
+
+}
+
