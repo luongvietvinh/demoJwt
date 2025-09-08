@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.dto.ConstructionDto;
 import com.example.demo.dto.FileDiffResult;
 import com.example.demo.dto.FileDto;
-import com.example.demo.exception.FileDeleteException;
 import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.ConstructionRepository;
 import com.example.demo.repository.FileRepository;
