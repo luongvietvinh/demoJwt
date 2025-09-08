@@ -12,11 +12,12 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.demo.dto.ContructionDto;
+import com.example.demo.dto.ConstructionDto;
 import com.example.demo.dto.FileDiffResult;
 import com.example.demo.dto.FileDto;
+import com.example.demo.exception.FileDeleteException;
 import com.example.demo.exception.NotFoundException;
-import com.example.demo.repository.ContructionRepository;
+import com.example.demo.repository.ConstructionRepository;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.service.impl.FileSyncCommonService;
 import com.example.demo.service.impl.S3FileService;
@@ -26,40 +27,40 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ContructionService implements IcontructionService {
+public class ConstructionService implements IconstructionService {
 
   private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-  private EmailService emailService;
-  private S3FileService s3FileService;
-  private ContructionRepository repository;
-  private FileRepository fileRepository;
-  private FileSyncCommonService fileSyncService;
+  private final EmailService emailService;
+  private final S3FileService s3FileService;
+  private final ConstructionRepository repository;
+  private final FileRepository fileRepository;
+  private final FileSyncCommonService fileSyncService;
 
   @Transactional
   @CacheEvict(value = "constructionList", allEntries = true)
-  public ContructionDto createContruction(ContructionDto dto) {
+  public ConstructionDto createConstruction(ConstructionDto dto) {
       List<FileDto> uploadedFiles = Collections.emptyList();
       try {
-          if (checkExistsContruction(dto.getContructionId())) {
-              throw new IllegalArgumentException("Công trình đã tồn tại với ID: " + dto.getContructionId());
+          if (checkExistsConstruction(dto.getConstructionId())) {
+              throw new IllegalArgumentException("Công trình đã tồn tại với ID: " + dto.getConstructionId());
           }
 
           if (dto.getUploadFiles() != null && !dto.getUploadFiles().isEmpty()) {
-              uploadedFiles = s3FileService.uploadFiles(dto.getUploadFiles(), dto.getUserID(), dto.getUserName(), dto.getContructionId());
+              uploadedFiles = s3FileService.uploadFiles(dto.getUploadFiles(), dto.getUserID(), dto.getUserName(), dto.getConstructionId());
               dto.setFiles(uploadedFiles);
           }
 
-          int count = repository.createContruction(dto);
+          int count = repository.createConstruction(dto);
           if (count <= 0) throw new IllegalArgumentException("Insert construction thất bại");
 
           if (!uploadedFiles.isEmpty()) {
-              int fileCount = fileRepository.insertListFile(uploadedFiles, dto.getContructionId());
+              int fileCount = fileRepository.insertListFile(uploadedFiles, dto.getConstructionId());
               if (fileCount <= 0) throw new IllegalArgumentException("Insert files thất bại");
           }
 
           sendRegistrationEmail(dto);
-          return repository.getContructionById(dto.getContructionId());
+          return repository.getConstructionById(dto.getConstructionId());
 
       } catch (Exception e) {
           s3FileService.deleteFiles(uploadedFiles); // rollback
@@ -68,20 +69,20 @@ public class ContructionService implements IcontructionService {
   }
   
   /*/ 
-   * check exit contruction
+   * check exit construction
    */
-  private boolean checkExistsContruction(String contructionId) {
-    boolean existsByContructionId = repository.existsByContructionId(contructionId);
-    return existsByContructionId;
+  private boolean checkExistsConstruction(String constructionId) {
+    boolean existsByConstructionId = repository.existsByConstructionId(constructionId);
+    return existsByConstructionId;
   }
 
-  private void sendRegistrationEmail(ContructionDto dto) {
+  private void sendRegistrationEmail(ConstructionDto dto) {
     try {
       Map<String, Object> variables = new HashMap<>();
       String subject = "Đăng ký công trình thành công";
       variables.put("userName", dto.getUserName());
-      variables.put("contructionId", dto.getContructionId());
-      variables.put("contructionName", dto.getContructionName());
+      variables.put("constructionId", dto.getConstructionId());
+      variables.put("constructionName", dto.getConstructionName());
       variables.put("subject", subject);
 
       String template = "MailContruction";
@@ -96,8 +97,8 @@ public class ContructionService implements IcontructionService {
 
 
   @Override
-  public Optional<ContructionDto> getContructionById(String contructionId) {
-    ContructionDto construction = repository.getContructionById(contructionId);
+  public Optional<ConstructionDto> getConstructionById(String constructionId) {
+    ConstructionDto construction = repository.getConstructionById(constructionId);
     if(construction == null) {
       throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
     }
@@ -106,77 +107,83 @@ public class ContructionService implements IcontructionService {
 
   @Override
   @Cacheable(value = "constructionList", key = "#page + '-' + #size")
-  public List<ContructionDto> getListContruction(int page, int size) {
+  public List<ConstructionDto> getListConstruction(int page, int size) {
     if (page == 0) {
       page++;
     }
     int offset = (page - 1) * size;
-    List<ContructionDto> contructions = repository.getLisstContruction(size, offset);
+    List<ConstructionDto> constructions = repository.getListConstruction(size, offset);
 
-    return contructions;
+    return constructions;
   }
 
   @Override
   @Transactional
   @CacheEvict(value = "constructionList", allEntries = true)
-  public void deleteContruction(String contructionId) {
-    logger.info("Request to delete construction with id={}", contructionId);
+  public void deleteConstruction(String constructionId) {
+    logger.info("Request to delete construction with id={}", constructionId);
 
-    ContructionDto construction = repository.getContructionById(contructionId);
+    ConstructionDto construction = repository.getConstructionById(constructionId);
     if (construction == null) {
-      logger.warn("Construction with id={} not found", contructionId);
+      logger.warn("Construction with id={} not found", constructionId);
         throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
     }
 
     // Xóa construction
-    repository.deleteContruction(contructionId);
-    logger.info("Deleted construction record with id={}", contructionId);
+    repository.deleteConstruction(constructionId);
+    logger.info("Deleted construction record with id={}", constructionId);
 
     // Xử lý file nếu có
     if (construction.getFiles() != null && !construction.getFiles().isEmpty()) {
             // Xóa trên S3
             s3FileService.deleteFiles(construction.getFiles());
-            logger.info("Deleted {} files from S3 for construction id={}", construction.getFiles().size(), contructionId);
+            logger.info("Deleted {} files from S3 for construction id={}", construction.getFiles().size(), constructionId);
 
             // Xóa trong DB
             List<String> uuids = construction.getFiles().stream()
                                         .map(FileDto::getUuId)
                                         .toList();
             fileRepository.deleteFilesByUuids(uuids);
-            logger.info("Deleted {} files from DB for construction id={}", uuids.size(), contructionId);
+            logger.info("Deleted {} files from DB for construction id={}", uuids.size(), constructionId);
     }
 
   }
 
   @Transactional
   @CacheEvict(value = "constructionList", allEntries = true)
-  public ContructionDto updateContruction(ContructionDto dto) {
+  public ConstructionDto updateConstruction(ConstructionDto dto) {
       FileDiffResult diff = new FileDiffResult(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+      // Kiểm tra tồn tại
+      if (!checkExistsConstruction(dto.getConstructionId())) {
+        throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
+    }
       try {
-          if (!checkExistsContruction(dto.getContructionId())) {
-              throw new NotFoundException(MessageUtils.CONTRUCTION_NOT_FOUND);
-          }
-
+          // Đồng bộ file với S3
           diff = fileSyncService.syncFiles(dto);
-
-          int updated = repository.updateContruction(dto);
+          
+          // Update thông tin construction
+          int updated = repository.updateConstruction(dto);
           if (updated <= 0) throw new NotFoundException(MessageUtils.UPDATE_FAIL);
-
+          
+          // Thêm file mới vào DB
           if (!diff.getToInsert().isEmpty()) {
-              fileRepository.insertListFile(diff.getToInsert(), dto.getContructionId());
+              fileRepository.insertListFile(diff.getToInsert(), dto.getConstructionId());
           }
-
+       // Xóa file cũ khỏi DB và S3 **ngoài transaction chính** để đảm bảo exception không bị wrap
           if (!diff.getToDelete().isEmpty()) {
-              s3FileService.deleteFiles(diff.getToDelete());
               List<String> uuids = diff.getToDelete().stream().map(FileDto::getUuId).toList();
+              // Xóa trong DB
               fileRepository.deleteFilesByUuids(uuids);
+              // Xóa trên S3
+              s3FileService.deleteFiles(diff.getToDelete());
           }
-
-          return repository.getContructionById(dto.getContructionId());
+          // Trả về entity đã update
+          return repository.getConstructionById(dto.getConstructionId());
 
       } catch (Exception e) {
+          // Rollback file vừa upload
           s3FileService.deleteFiles(diff.getUploadedNow()); // rollback file mới
-          throw e;
+          throw new RuntimeException(MessageUtils.DELETE_FAIL , e);
       }
   }
 

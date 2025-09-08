@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.demo.dto.ContructionDto;
+import com.example.demo.dto.ConstructionDto;
 import com.example.demo.dto.FileDiffResult;
 import com.example.demo.dto.FileDto;
 import com.example.demo.repository.FileRepository;
@@ -23,11 +23,11 @@ public class FileSyncCommonService {
     @Autowired
     private S3FileService s3FileService;
 
-    public FileDiffResult syncFiles(ContructionDto dto) {
+    public FileDiffResult syncFiles(ConstructionDto dto) {
         List<FileDto> uploadedNow = new ArrayList<>();
 
         // 1. DB snapshot
-        List<FileDto> dbFiles = fileRepository.getFilesByContructionId(dto.getContructionId());
+        List<FileDto> dbFiles = fileRepository.getFilesByConstructionId(dto.getConstructionId());
         Set<String> dbUuids = dbFiles.stream().map(FileDto::getUuId).collect(Collectors.toSet());
 
         // 2. Files từ client (metadata)
@@ -36,7 +36,7 @@ public class FileSyncCommonService {
 
         // 3. Upload file mới từ FE
         if (dto.getUploadFiles() != null && !dto.getUploadFiles().isEmpty()) {
-            uploadedNow = s3FileService.uploadFiles(dto.getUploadFiles(), dto.getUserID(), dto.getUserName(), dto.getContructionId());
+            uploadedNow = s3FileService.uploadFiles(dto.getUploadFiles(), dto.getUserID(), dto.getUserName(), dto.getConstructionId());
         }
         Set<String> uploadedUuids = uploadedNow.stream().map(FileDto::getUuId).collect(Collectors.toSet());
 

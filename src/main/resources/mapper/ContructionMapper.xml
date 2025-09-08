@@ -2,14 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.demo.repository.ContructionRepository">
+<mapper namespace="com.example.demo.repository.ConstructionRepository">
 
 
-	<resultMap id="ContructionResultMap" type="com.example.demo.dto.ContructionDto">
-    <id property="contructionId" column="contructionId"/>
+	<resultMap id="ConstructionResultMap" type="com.example.demo.dto.ConstructionDto">
+    <id property="constructionId" column="constructionId"/>
     <result property="userID" column="userID"/>
     <result property="userName" column="userName"/>
-    <result property="contructionName" column="contructionName"/>
+    <result property="constructionName" column="constructionName"/>
     <result property="address" column="address"/>
     <result property="phoneNumber" column="phoneNumber"/>
     <result property="zipCode" column="zipCode"/>
@@ -19,20 +19,20 @@
     
     <collection property="files" ofType="com.example.demo.dto.FileDto">
         <result property="uuId" column="fileUuId"/>
-        <result property="contructionId" column="fileContructionId"/>
+        <result property="constructionId" column="fileConstructionId"/>
         <result property="fileName" column="fileName"/>
         <result property="fileSize" column="fileSize"/>
         <result property="filePath" column="filePath"/>
         <result property="createTime" column="fileCreateTime"/>
     </collection>
 </resultMap>
-    <!-- Insert single contruction -->
-    <insert id="createContruction" parameterType="com.example.demo.dto.ContructionDto">
-        INSERT INTO contruction (
-            contruction_id,
+    <!-- Insert single construction -->
+    <insert id="createConstruction" parameterType="com.example.demo.dto.ConstructionDto">
+        INSERT INTO construction (
+            construction_id,
             user_id,
             user_name,
-            contruction_name,
+            construction_name,
             address,
             phone_number,
             zip_code,
@@ -40,10 +40,10 @@
             created_at,
             updated_at
         ) VALUES (
-            #{contructionId},
+            #{constructionId},
             #{userID},
             #{userName},
-            #{contructionName},
+            #{constructionName},
             #{address},
             #{phoneNumber},
             #{zipCode},
@@ -53,13 +53,13 @@
         )
     </insert>
 
-    <!-- Insert batch contructions -->
-    <insert id="insertListContruction" parameterType="java.util.List">
-        INSERT INTO contruction (
-            contruction_id,
+    <!-- Insert batch constructions -->
+    <insert id="insertListConstruction" parameterType="java.util.List">
+        INSERT INTO construction (
+            construction_id,
             user_id,
             user_name,
-            contruction_name,
+            construction_name,
             address,
             phone_number,
             zip_code,
@@ -67,10 +67,10 @@
         ) VALUES
         <foreach collection="list" item="item" separator=",">
             (
-                #{item.contructionId},
+                #{item.constructionId},
                 #{item.userID},
                 #{item.userName},
-                #{item.contructionName},
+                #{item.constructionName},
                 #{item.address},
                 #{item.phoneNumber},
                 #{item.zipCode},
@@ -79,13 +79,13 @@
         </foreach>
     </insert>
 
-    <!-- Select list contructions (with pagination) -->
-    <select id="getLisstContruction" resultMap="ContructionResultMap">
+    <!-- Select list constructions (with pagination) -->
+    <select id="getLisstConstruction" resultMap="ConstructionResultMap">
         SELECT 
-		  C.contruction_id AS contructionId,
+		  C.construction_id AS constructionId,
 			C.user_id AS userID,
 			C.user_name AS userName,
-			C.contruction_name AS contructionName,
+			C.construction_name AS constructionName,
 			C.address,
 			C.phone_number AS phoneNumber,
 			C.zip_code AS zipCode,
@@ -93,7 +93,7 @@
 			C.created_at AS createdAt,
 			C.updated_at AS updatedAt,
 			f.uuid AS fileUuId,
-			f.contruction_id AS fileContructionId,
+			f.construction_id AS fileConstructionId,
 			f.file_name AS fileName,
 			f.file_size AS fileSize,
 			f.file_path AS filePath,
@@ -101,31 +101,31 @@
 		FROM
 		 (
 		 SELECT 
-			contruction_id,
+			construction_id,
 			user_id,
 			user_name,
-			contruction_name,
+			construction_name,
 			address,
 			phone_number,
 			zip_code,
 			mail,
 			created_at,
 			updated_at	
-		 FROM contruction
-		 ORDER BY contruction_name
+		 FROM construction
+		 ORDER BY construction_name
 		    LIMIT #{limit} OFFSET #{offset}
 		) c
-		LEFT JOIN files f ON c.contruction_id = f.contruction_id
-		ORDER BY c.contruction_name;
+		LEFT JOIN files f ON c.construction_id = f.construction_id
+		ORDER BY c.construction_name;
     </select>
 
-    <!-- Select contruction by ID -->
-    <select id="getContructionById" parameterType="string" resultMap="ContructionResultMap">
+    <!-- Select construction by ID -->
+    <select id="getConstructionById" parameterType="string" resultMap="ConstructionResultMap">
     SELECT 
-        c.contruction_id   AS contructionId,
+        c.construction_id   AS constructionId,
         c.user_id          AS userID,
         c.user_name        AS userName,
-        c.contruction_name AS contructionName,
+        c.construction_name AS constructionName,
         c.address,
         c.phone_number     AS phoneNumber,
         c.zip_code         AS zipCode,
@@ -133,46 +133,46 @@
         c.created_at        AS createdAt,
         c.updated_at        AS updatedAt,
         f.uuid             AS fileUuId,       <!-- sửa lại từ uu_id -->
-        f.contruction_id   AS fileContructionId,       <!-- sửa lại từ uu_id -->
+        f.construction_id   AS fileConstructionId,       <!-- sửa lại từ uu_id -->
         f.file_name        AS fileName,
         f.file_size        AS fileSize,
         f.file_path        AS filePath,
         f.create_time      AS fileCreateTime
-    FROM contruction c
-    LEFT JOIN files f ON c.contruction_id = f.contruction_id
-    WHERE c.contruction_id = #{contructionId}
+    FROM construction c
+    LEFT JOIN files f ON c.construction_id = f.construction_id
+    WHERE c.construction_id = #{constructionId}
 </select>
 
-    <!-- Delete contruction by ID -->
-    <delete id="deleteContruction" parameterType="string">
-        DELETE FROM contruction WHERE contruction_id = #{contructionId}
+    <!-- Delete construction by ID -->
+    <delete id="deleteConstruction" parameterType="string">
+        DELETE FROM construction WHERE construction_id = #{constructionId}
     </delete>
 
-    <!-- Update contruction -->
-    <update id="updateContruction" parameterType="com.example.demo.dto.ContructionDto">
-        UPDATE contruction
+    <!-- Update construction -->
+    <update id="updateConstruction" parameterType="com.example.demo.dto.ConstructionDto">
+        UPDATE construction
         SET
             user_id          = #{userID},
             user_name        = #{userName},
-            contruction_name = #{contructionName},
+            construction_name = #{constructionName},
             address          = #{address},
             phone_number     = #{phoneNumber},
             zip_code         = #{zipCode},
             mail             = #{mail},
             updated_at       = CURRENT_TIMESTAMP
-        WHERE contruction_id = #{contructionId} AND updated_at = #{updatedAt}
+        WHERE construction_id = #{constructionId} AND updated_at = #{updatedAt}
     </update>
 
-    <!-- Check if contruction exists -->
-    <select id="existsByContructionId" parameterType="string" resultType="boolean">
+    <!-- Check if construction exists -->
+    <select id="existsByConstructionId" parameterType="string" resultType="boolean">
         SELECT COUNT(1) > 0
-        FROM contruction
-        WHERE contruction_id = #{contructionId}
+        FROM construction
+        WHERE construction_id = #{constructionId}
     </select>
     
     <!-- delete by batch -->
     <delete id="deleteOldData">
-        DELETE FROM my_data
+        DELETE FROM construction
         WHERE created_at &lt; #{threshold}
     </delete>
 

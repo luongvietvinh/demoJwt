@@ -11,17 +11,13 @@ public interface FileRepository {
     int insertFile(FileDto file);
     
     int insertListFile(@Param("files") List<FileDto> files, 
-                      @Param("contructionId") String contructionId);
+                      @Param("constructionId") String constructionId);
     
     List<FileDto> getFilesByConstructionId(String constructionId);
     
     int deleteFile(String uuId);
     
     int deleteFilesByConstructionId(String constructionId);
-    
-    //thêm mới
-
-    List<FileDto> getFilesByContructionId(String contructionId);
 
     int deleteFilesByUuids(List<String> deleteUuids);
 }

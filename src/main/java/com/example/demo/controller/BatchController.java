@@ -4,7 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.demo.service.ContructionService;
+import com.example.demo.service.ConstructionService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/batch")
 public class BatchController {
 
-    private final ContructionService contructionService;
+    private final ConstructionService contructionService;
 
 
     @DeleteMapping("/cleanup")

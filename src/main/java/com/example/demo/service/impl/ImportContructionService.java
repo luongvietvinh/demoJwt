@@ -12,8 +12,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.demo.dto.ContructionDto;
-import com.example.demo.repository.ContructionRepository;
+import com.example.demo.dto.ConstructionDto;
+import com.example.demo.repository.ConstructionRepository;
 import com.example.demo.service.IimportContructionService;
 import com.example.demo.utils.DateTimeUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ImportContructionService implements IimportContructionService {
 
-  private final ContructionRepository contructionRepo;
+  private final ConstructionRepository contructionRepo;
   
   @Override
   public void importCsv(MultipartFile file) throws IOException {
@@ -30,13 +30,13 @@ public class ImportContructionService implements IimportContructionService {
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
       String line;
       boolean skipHeader = true;
-      List<ContructionDto> list = new ArrayList<>();
+      List<ConstructionDto> list = new ArrayList<>();
 
       while ((line = reader.readLine()) != null) {
           if (skipHeader) { skipHeader = false; continue; }
           String[] parts = line.split(",");
-          ContructionDto c = new ContructionDto();
-          c.setContructionId(line);
+          ConstructionDto c = new ConstructionDto();
+          c.setConstructionId(line);
           c.setZipCode(line);
           c.setAddress(parts[2]);
           c.setCreatedAt(DateTimeUtils.toTimestamp(parts[3]));
@@ -44,7 +44,7 @@ public class ImportContructionService implements IimportContructionService {
       }
 
       if (!list.isEmpty()) {
-        contructionRepo.insertListContruction(list);
+        contructionRepo.insertListConstruction(list);
       }
   }
   }
@@ -54,23 +54,23 @@ public class ImportContructionService implements IimportContructionService {
     try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
       Sheet sheet = workbook.getSheetAt(0);
       Iterator<Row> rows = sheet.iterator();
-      List<ContructionDto> list = new ArrayList<>();
+      List<ConstructionDto> list = new ArrayList<>();
 
       boolean skipHeader = true;
       while (rows.hasNext()) {
           Row row = rows.next();
           if (skipHeader) { skipHeader = false; continue; }
 
-          ContructionDto c = new ContructionDto();
-          c.setContructionId(row.getCell(0).getStringCellValue());
-          c.setContructionName(row.getCell(1).getStringCellValue());
+          ConstructionDto c = new ConstructionDto();
+          c.setConstructionId(row.getCell(0).getStringCellValue());
+          c.setConstructionName(row.getCell(1).getStringCellValue());
           c.setAddress(row.getCell(2).getStringCellValue());
           c.setCreatedAt(DateTimeUtils.toTimestamp(row.getCell(3).getStringCellValue()));
           list.add(c);
       }
 
       if (!list.isEmpty()) {
-        contructionRepo.insertListContruction(list);
+        contructionRepo.insertListConstruction(list);
       }
     }
 

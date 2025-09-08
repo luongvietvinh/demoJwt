@@ -3,9 +3,10 @@ package com.example.demo.dto;
 import java.sql.Timestamp;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.demo.dto.request.ContructionReigisterRequest;
+import com.example.demo.dto.request.ConstructionReigisterRequest;
 import com.example.demo.dto.request.ContructionUpdateRequest;
 import com.example.demo.utils.CustomTimestampDeserializer;
+import com.example.demo.utils.CustomTimestampSerializer;
 import com.example.demo.utils.DateTimeUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -20,17 +21,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ContructionDto {
+public class ConstructionDto {
     private String userID;
     private String userName;
-    private String contructionId;
-    private String contructionName;
+    private String constructionId;
+    private String constructionName;
     private String address;
     private String phoneNumber;
     private String zipCode;
     private String mail;
+    @JsonSerialize(using = CustomTimestampSerializer.class)
     @JsonDeserialize(using = CustomTimestampDeserializer.class)
     private Timestamp createdAt;
+    @JsonSerialize(using = CustomTimestampSerializer.class)
     @JsonDeserialize(using = CustomTimestampDeserializer.class)
     private Timestamp updatedAt;
     
@@ -41,12 +44,12 @@ public class ContructionDto {
     private List<MultipartFile> uploadFiles;
     
  // 🛠️ Method chuyển từ request sang DTO
-    public static ContructionDto fromRequest(ContructionReigisterRequest request,String contructionId,String userId,String username) {
-      return ContructionDto.builder()
+    public static ConstructionDto fromRequest(ConstructionReigisterRequest request,String constructionId,String userId,String username) {
+      return ConstructionDto.builder()
               .userID(userId)
               .userName(username)
-              .contructionId(contructionId)
-              .contructionName(request.getContructionName())
+              .constructionId(constructionId)
+              .constructionName(request.getConstructionName())
               .address(request.getAddress())
               .phoneNumber(request.getPhoneNumber())
               .zipCode(request.getZipCode())
@@ -55,18 +58,18 @@ public class ContructionDto {
               .build();
   }
     // 🛠️ Method chuyển từ request sang DTO
-    public static ContructionDto fromRequest(ContructionUpdateRequest request,String userId,String username) {
-      return ContructionDto.builder()
+    public static ConstructionDto fromRequest(ContructionUpdateRequest request,String userId,String username) {
+      return ConstructionDto.builder()
           .userID(userId)
           .userName(username)
-          .contructionId(request.getContructionId())
-          .contructionName(request.getContructionName())
+          .constructionId(request.getConstructionId())
+          .constructionName(request.getConstructionName())
           .address(request.getAddress())
           .phoneNumber(request.getPhoneNumber())
           .zipCode(request.getZipCode())
           .mail(request.getMail())
           .uploadFiles(request.getUploadFiles())
-          .updatedAt(DateTimeUtils.toTimestamp(request.getUpdateAt()))
+          .updatedAt(DateTimeUtils.toTimestamp(request.getUpdatedAt()))
           .build();
     }
     

@@ -4,7 +4,7 @@ services:
   postgres:
     image: postgres:15
     container_name: postgres-demo
-    restart: always
+    restart: no
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -17,25 +17,9 @@ services:
   redis:
     image: redis:7
     container_name: redis
-    restart: always
+    restart: no
     ports:
       - "6379:6379"
-
-#  spring-app:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    container_name: spring-app-demo
-#    restart: always
-#    ports:
-#      - "8080:8080"
-#    env_file:
-#      - .env
-#    depends_on:
-#      - postgres
-#      - redis
-#    networks:
-#      - app-network
 
 volumes:
   pgdata:

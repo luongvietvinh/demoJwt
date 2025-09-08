@@ -9,10 +9,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ContructionEntity {
-    private String contructionId;
+    private String constructionId;
     private String userId;
     private String userName;
-    private String contructionName;
+    private String constructionName;
     private String address;
     private String phoneNumber;
     private String zipCode;

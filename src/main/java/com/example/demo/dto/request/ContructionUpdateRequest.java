@@ -10,8 +10,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class ContructionUpdateRequest extends ContructionReigisterRequest {
+public class ContructionUpdateRequest extends ConstructionReigisterRequest {
   
-  private String updateAt;
+  private String updatedAt;
 
 }

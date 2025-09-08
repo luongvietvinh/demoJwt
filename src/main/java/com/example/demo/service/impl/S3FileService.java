@@ -63,7 +63,7 @@ public class S3FileService {
             return FileDto.builder()
                     .uuId(UUID.randomUUID().toString())
                     .userId(userId)
-                    .contructionId(contructionId)
+                    .constructionId(contructionId)
                     .userName(userName)
                     .fileName(originalFilename)
                     .fileSize(file.getSize())
@@ -88,7 +88,7 @@ public class S3FileService {
             return true;
         } catch (Exception e) {
             log.error("Error deleting files from S3: {}", e.getMessage());
-            return false;
+            throw new RuntimeException("Failed to delete files from S3: " + e.getMessage(), e);
         }
     }
 }

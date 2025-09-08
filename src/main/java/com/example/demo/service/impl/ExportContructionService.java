@@ -8,8 +8,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
-import com.example.demo.dto.ContructionDto;
-import com.example.demo.repository.ContructionRepository;
+import com.example.demo.dto.ConstructionDto;
+import com.example.demo.repository.ConstructionRepository;
 import com.example.demo.service.IexportContructionService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ExportContructionService implements IexportContructionService {
   
-  private final ContructionRepository contructionRepo;
+  private final ConstructionRepository contructionRepo;
   
 
   @Override
@@ -38,13 +38,13 @@ public class ExportContructionService implements IexportContructionService {
 
     int rowIdx = 1;
     int offset = 0;
-    List<ContructionDto> batch;
+    List<ConstructionDto> batch;
     do {
-        batch = contructionRepo.getLisstContruction(1000, offset);
-        for (ContructionDto c : batch) {
+        batch = contructionRepo.getListConstruction(1000, offset);
+        for (ConstructionDto c : batch) {
             Row row = sheet.createRow(rowIdx++);
-            row.createCell(0).setCellValue(c.getContructionId());
-            row.createCell(1).setCellValue(c.getContructionName());
+            row.createCell(0).setCellValue(c.getConstructionId());
+            row.createCell(1).setCellValue(c.getConstructionName());
             row.createCell(2).setCellValue(c.getAddress());
             row.createCell(3).setCellValue(c.getCreatedAt().toString());
         }
@@ -65,13 +65,13 @@ public class ExportContructionService implements IexportContructionService {
     writer.println("Contruction ID,Contruction Name,Address,Create time");
 
     int offset = 0;
-    List<ContructionDto> batch;
+    List<ConstructionDto> batch;
     do {
-        batch = contructionRepo.getLisstContruction(1000, offset);
-        for (ContructionDto c : batch) {
+        batch = contructionRepo.getListConstruction(1000, offset);
+        for (ConstructionDto c : batch) {
             writer.println(String.format("%s,%s,%s,%s",
-                    c.getContructionId(),
-                    c.getContructionName(),
+                    c.getConstructionId(),
+                    c.getConstructionName(),
                     c.getAddress(),
                     c.getCreatedAt()));
         }

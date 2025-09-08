@@ -69,6 +69,18 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        
+        <!-- Flyway Migration -->
+	    <dependency>
+	        <groupId>org.flywaydb</groupId>
+	        <artifactId>flyway-core</artifactId>
+	    </dependency>
+	    
+	    <!-- Flyway PostgreSQL Plugin -->
+	    <dependency>
+	        <groupId>org.flywaydb</groupId>
+	        <artifactId>flyway-database-postgresql</artifactId>
+	    </dependency>
 
         <!-- Validation -->
         <dependency>
@@ -236,6 +248,21 @@
                     <mainClass>com.example.utils.SendEmail</mainClass>
                 </configuration>
             </plugin>
+            
+            <!-- flywaydb -->
+            <plugin>
+	            <groupId>org.flywaydb</groupId>
+	            <artifactId>flyway-maven-plugin</artifactId>
+	            <version>9.22.3</version>
+	            <configuration>
+	                <url>jdbc:postgresql://localhost:5432/demo</url>
+	                <user>postgres</user>
+	                <password>postgres</password>
+	                <locations>
+	                    <location>classpath:db/migration</location>
+	                </locations>
+	            </configuration>
+	        </plugin>
         </plugins>
     </build>
 

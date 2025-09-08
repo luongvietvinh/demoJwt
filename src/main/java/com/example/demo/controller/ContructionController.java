@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.demo.dto.ContructionDto;
-import com.example.demo.dto.request.ContructionReigisterRequest;
+import com.example.demo.dto.ConstructionDto;
+import com.example.demo.dto.request.ConstructionReigisterRequest;
 import com.example.demo.dto.request.ContructionUpdateRequest;
 import com.example.demo.dto.request.UpdateUserRequest;
 import com.example.demo.entity.Users;
 import com.example.demo.security.CustomUserDetails;
-import com.example.demo.service.ContructionService;
+import com.example.demo.service.ConstructionService;
 import com.example.demo.service.impl.ExportContructionService;
 import com.example.demo.service.impl.ImportContructionService;
 import com.example.demo.utils.CommonUtils;
@@ -42,12 +42,12 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/contruction")
+@RequestMapping("/api/construction")
 public class ContructionController {
 
   private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-  private final ContructionService contructionService;
+  private final ConstructionService constructionService;
   private final ExportContructionService exportService;
   private final ImportContructionService importService;
 
@@ -55,7 +55,7 @@ public class ContructionController {
   @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @PreAuthorize("hasRole('USER')")
   public ResponseEntity<Object> createContruction(
-      @ModelAttribute @Valid ContructionReigisterRequest request) {
+      @ModelAttribute @Valid ConstructionReigisterRequest request) {
 
     try {
       logger.info("LOGGING =>> Creating construction with files count: {}",
@@ -65,11 +65,11 @@ public class ContructionController {
       request.setUserID(userDetails.getUserId());
       request.setUserName(userDetails.getUsername());
 
-      String contructionId = RandomStringUtils.randomAlphabetic(8);
+      String constructionId = RandomStringUtils.randomAlphabetic(8);
       String userId = userDetails.getUserId();
       String username = userDetails.getUsername();
-      ContructionDto dto = ContructionDto.fromRequest(request, contructionId, userId, username);
-      ContructionDto construction = contructionService.createContruction(dto);
+      ConstructionDto dto = ConstructionDto.fromRequest(request, constructionId, userId, username);
+      ConstructionDto construction = constructionService.createConstruction(dto);
 
       return ResponseEntity.ok(construction);
 
@@ -82,23 +82,23 @@ public class ContructionController {
 
 
   @GetMapping
-  public ResponseEntity<List<ContructionDto>> getAllUsers(
+  public ResponseEntity<List<ConstructionDto>> getAllUsers(
       @RequestParam(defaultValue = "1") int page,
       @RequestParam(defaultValue = "10") int size) {
-    List<ContructionDto> users = contructionService.getListContruction(page, size);
+    List<ConstructionDto> users = constructionService.getListConstruction(page, size);
     return ResponseEntity.ok(users);
   }
 
-  @GetMapping("/{contructionId}")
-  public ResponseEntity<ContructionDto> getContructionById(@PathVariable String contructionId) {
-    logger.info("LOGGIN =>> start get detail user ->" + contructionId);
-    return contructionService.getContructionById(contructionId)
+  @GetMapping("/{constructionId}")
+  public ResponseEntity<ConstructionDto> getContructionById(@PathVariable String constructionId) {
+    logger.info("LOGGIN =>> start get detail user ->" + constructionId);
+    return constructionService.getConstructionById(constructionId)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }
 
   @PutMapping("/update")
-  public ResponseEntity<ContructionDto> updateContruction(
+  public ResponseEntity<ConstructionDto> updateContruction(
                     @ModelAttribute @Valid ContructionUpdateRequest request) {
       
       logger.info("LOGGING Start UPDATE => convert request to entity -> " + request);
@@ -107,16 +107,16 @@ public class ContructionController {
       CustomUserDetails userDetails = CommonUtils.getUserLogin();
       String userId = userDetails.getUserId();
       String username = userDetails.getUsername();
-      // contructionId lấy từ path, KHÔNG random mới
-      ContructionDto dto = ContructionDto.fromRequest(request, userId, username);
+      // constructionId lấy từ path, KHÔNG random mới
+      ConstructionDto dto = ConstructionDto.fromRequest(request, userId, username);
 
-      ContructionDto updated = contructionService.updateContruction(dto);
+      ConstructionDto updated = constructionService.updateConstruction(dto);
       return ResponseEntity.ok(updated);
   }
 
-  @DeleteMapping("/{contructionId}")
-  public ResponseEntity<Void> deleteUser(@PathVariable String contructionId) {
-    contructionService.deleteContruction(contructionId);
+  @DeleteMapping("/{constructionId}")
+  public ResponseEntity<Void> deleteUser(@PathVariable String constructionId) {
+    constructionService.deleteConstruction(constructionId);
     return ResponseEntity.noContent().build();
   }
   

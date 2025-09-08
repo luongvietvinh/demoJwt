@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -51,6 +52,18 @@ public class GlobalExceptionHandler {
       errorResponse.put("path", request.getRequestURI());
 
       return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+  }
+  
+  @ExceptionHandler(TransactionSystemException.class)
+  public ResponseEntity<Map<String, Object>> handleTransactionSystemException(TransactionSystemException ex, HttpServletRequest request) {
+      Throwable rootCause = ex.getRootCause(); // lấy nguyên nhân gốc
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("timestamp", LocalDateTime.now());
+      errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+      errorResponse.put("error", "Internal Server Error");
+      errorResponse.put("message", rootCause != null ? rootCause.getMessage() : ex.getMessage());
+      errorResponse.put("path", request.getRequestURI());
+      return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
   }
   
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)

@@ -16,14 +16,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContructionReigisterRequest {
+public class ConstructionReigisterRequest {
     
     private String userID;
     private String userName;
-    private String contructionId;
+    private String constructionId;
     
     @NotBlank(message = "Construction name không được để trống")
-    private String contructionName;
+    private String constructionName;
     
     @NotBlank(message = "Address không được để trống")
     private String address;
