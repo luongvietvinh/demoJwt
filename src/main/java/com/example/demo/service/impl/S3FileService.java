@@ -1,8 +1,10 @@
 package com.example.demo.service.impl;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -10,8 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.demo.dto.FileDto;
@@ -90,5 +95,18 @@ public class S3FileService {
             log.error("Error deleting files from S3: {}", e.getMessage());
             throw new RuntimeException("Failed to delete files from S3: " + e.getMessage(), e);
         }
+    }
+
+    public String generatePresignedUrl(String s3Key, int minutes) {
+        // Thời gian hết hạn
+        Date expiration = new Date(System.currentTimeMillis() + minutes * 60 * 1000);
+
+        // Request tạo URL
+        GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucketName, s3Key)
+                .withMethod(HttpMethod.GET)
+                .withExpiration(expiration);
+
+        URL url = s3Client.generatePresignedUrl(request);
+        return url.toString();
     }
 }
