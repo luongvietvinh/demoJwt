@@ -36,3 +36,8 @@ build/
 /demoJwt-clean/postgres_data/
 
 .env
+### Eclipse ###
+bin/
+.classpath
+.project
+.settings/
